@@ -1,0 +1,127 @@
+/* Imperial Compounds storefront — UI kit styles (builds on colors_and_type.css) */
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--fg); font-family: var(--font-sans); line-height: 1.5; }
+.ic-app { min-height: 100vh; display: flex; flex-direction: column; }
+.ic-wrap { max-width: 1180px; margin: 0 auto; padding: 0 22px; width: 100%; }
+a { color: inherit; text-decoration: none; cursor: pointer; }
+.ic .ic svg, .ic svg { width: 1em; height: 1em; display: block; }
+
+/* ---------- Announcement ---------- */
+.ic-annc {
+  background: var(--navy-deep); color: var(--gold-light); text-align: center;
+  font-size: 12px; letter-spacing: .08em; padding: 9px 12px; text-transform: uppercase;
+}
+
+/* ---------- Header ---------- */
+.ic-header { background: var(--navy); border-bottom: 1px solid var(--line-on-navy); position: sticky; top: 0; z-index: 30; }
+.ic-hbar { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 13px 22px; }
+.ic-brandlock { display: flex; align-items: center; gap: 13px; }
+.ic-brandlock-txt { display: flex; flex-direction: column; font-family: var(--font-display); white-space: nowrap; }
+.ic-brandlock-txt small { display: block; font-family: var(--font-sans); font-weight: 500; margin-top: 3px; }
+.ic-nav { display: flex; gap: 18px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; align-items: center; }
+.ic-nav a { color: #dfe5f1; padding: 6px 0; border-bottom: 2px solid transparent; white-space: nowrap; transition: color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease); }
+.ic-nav a:hover { color: #fff; border-color: var(--gold); }
+.ic-nav-verify { display: inline-flex; align-items: center; gap: 6px; color: var(--gold-light) !important; }
+.ic-cart { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line-on-navy); background: transparent; color: var(--gold-light); padding: 9px 16px; border-radius: var(--r-sm); font-size: 12px; letter-spacing: .06em; cursor: pointer; font-family: var(--font-sans); white-space: nowrap; transition: background var(--dur-fast); }
+.ic-cart:hover { background: var(--navy-2); }
+
+/* ---------- Buttons ---------- */
+.ic-btn { font-family: var(--font-sans); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border: none; border-radius: var(--r-sm); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px; transition: filter var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease), box-shadow var(--dur-fast); }
+.ic-btn-md { padding: 13px 28px; font-size: 12.5px; }
+.ic-btn-sm { padding: 9px 16px; font-size: 11px; }
+.ic-btn-lg { padding: 16px 38px; font-size: 13.5px; }
+.ic-btn-gold { background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #2a2208; box-shadow: var(--sh-gold); }
+.ic-btn-gold:hover { filter: brightness(1.05); }
+.ic-btn-gold:active { background: var(--gold-deep); transform: translateY(1px); }
+.ic-btn-navy { background: var(--navy); color: #fff; }
+.ic-btn-navy:hover { background: var(--navy-2); }
+.ic-btn-navy:active { transform: translateY(1px); }
+.ic-btn-ghost { background: transparent; border: 1px solid var(--line-strong); color: var(--navy); }
+.ic-btn-ghost:hover { border-color: var(--gold); color: var(--gold-deep); }
+.ic-btn-ghostgold { background: transparent; border: 1px solid rgba(201,164,76,.5); color: var(--gold-light); }
+.ic-btn-ghostgold:hover { background: rgba(201,164,76,.1); }
+
+/* ---------- Badges / pills ---------- */
+.ic-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; letter-spacing: .04em; padding: 5px 11px; border-radius: var(--r-pill); }
+.ic-badge-cat { background: var(--navy); color: var(--gold-light); text-transform: uppercase; letter-spacing: .1em; font-size: 9.5px; }
+.ic-badge-stack { background: var(--gold-wash); color: var(--gold-deep); border: 1px solid rgba(201,164,76,.4); text-transform: uppercase; letter-spacing: .08em; font-size: 9.5px; }
+.ic-badge-ruo { background: var(--warning-bg); color: var(--warning); text-transform: uppercase; letter-spacing: .07em; font-size: 9.5px; border: 1px solid #EBD9A8; }
+.ic-verified { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; color: var(--success); background: var(--success-bg); border: 1px solid #BFDDCE; border-radius: var(--r-pill); padding: 5px 11px; white-space: nowrap; }
+.ic-verified.sm { font-size: 10px; padding: 3px 8px; }
+
+/* ---------- RUO micro ---------- */
+.ic-ruo-micro { font-size: 9px; letter-spacing: .07em; text-transform: uppercase; color: #b9b09a; }
+
+/* ---------- Hero ---------- */
+.ic-hero { background: linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, var(--navy-2)); color: #fff; text-align: center; padding: 64px 0 58px; position: relative; overflow: hidden; }
+.ic-hero::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% -10%, rgba(201,164,76,.2), transparent 60%); pointer-events: none; }
+.ic-hero .crest { height: 92px; margin-bottom: 22px; filter: drop-shadow(0 6px 22px rgba(0,0,0,.45)); position: relative; }
+.ic-hero h1 { font-family: var(--font-display); font-weight: 600; font-size: 50px; line-height: 1.05; letter-spacing: -.005em; margin-bottom: 16px; position: relative; }
+.ic-hero h1 .it { font-style: italic; color: var(--gold-light); }
+.ic-hero h1 .hl { color: var(--gold-light); }
+.ic-hero p { color: var(--fg-on-navy-2); max-width: 600px; margin: 0 auto 28px; font-family: var(--font-display); font-size: 22px; font-weight: 400; line-height: 1.5; letter-spacing: .005em; position: relative; }
+.ic-hero .cta { display: flex; gap: 14px; justify-content: center; position: relative; }
+
+/* ---------- Trust strip ---------- */
+.ic-trust { background: var(--navy-deep); border-top: 1px solid var(--line-on-navy); border-bottom: 1px solid var(--line-on-navy); }
+.ic-trust .ic-wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; padding: 18px 22px; }
+.ic-trust .item { display: flex; align-items: center; gap: 10px; color: #cdd4e3; font-size: 13px; letter-spacing: .02em; }
+.ic-trust .item .ic { color: var(--gold-light); }
+.ic-trust b { color: var(--gold-light); font-weight: 600; }
+
+/* ---------- Category section ---------- */
+.ic-cat { padding: 52px 0 8px; scroll-margin-top: 70px; }
+.ic-cat-head { text-align: center; margin-bottom: 30px; }
+.ic-cat-head .eye { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-deep); font-weight: 600; }
+.ic-cat-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 34px; color: var(--navy); margin: 8px 0 6px; }
+.ic-cat-head .sub { color: var(--fg-muted); font-size: 14px; }
+.ic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 20px; }
+
+/* ---------- Product card ---------- */
+.ic-card { background: #fff; border: 1px solid #e7e3d6; border-radius: var(--r-md); padding: 14px 16px 16px; display: flex; flex-direction: column; position: relative; transition: box-shadow var(--dur) var(--ease), transform var(--dur) var(--ease), border-color var(--dur); cursor: pointer; }
+.ic-card:hover { box-shadow: var(--sh-card); transform: translateY(-3px); border-color: var(--line-gold); }
+.ic-card .chip { position: absolute; top: 12px; right: 12px; font-size: 9px; letter-spacing: .08em; background: var(--navy); color: var(--gold-light); padding: 4px 9px; border-radius: var(--r-pill); text-transform: uppercase; z-index: 2; }
+.ic-card .vbadge { position: absolute; top: 12px; left: 12px; z-index: 2; }
+.ic-vialwrap { height: 188px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.ic-vialwrap img { height: 100%; width: auto; object-fit: contain; mix-blend-mode: multiply; }
+.ic-card .nm { font-family: var(--font-display); font-weight: 600; font-size: 21px; color: var(--navy); line-height: 1.1; }
+.ic-card .ds { color: var(--fg-muted); font-size: 12.5px; margin: 2px 0 0; }
+.ic-card .meta-row { margin-top: auto; padding-top: 12px; display: flex; align-items: center; justify-content: space-between; }
+.ic-card .pr { font-weight: 700; font-size: 18px; color: var(--navy); white-space: nowrap; }
+.ic-card .pr small { font-weight: 500; font-size: 10.5px; color: var(--fg-muted); }
+.ic-card .ruoline { font-size: 9px; color: #b9b09a; letter-spacing: .05em; margin-top: 10px; text-transform: uppercase; }
+
+/* ---------- COA band ---------- */
+.ic-coa { margin: 58px 0 8px; background: linear-gradient(150deg, var(--navy), var(--navy-2)); color: #fff; border: 1px solid var(--line-on-navy); border-radius: var(--r-lg); padding: 42px; position: relative; overflow: hidden; }
+.ic-coa::before { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% -30%, rgba(201,164,76,.18), transparent 55%); pointer-events: none; }
+.ic-coa-inner { display: flex; gap: 34px; align-items: center; flex-wrap: wrap; position: relative; }
+.ic-coa .badge-ic { width: 72px; height: 72px; border-radius: 50%; border: 1px solid var(--line-gold); display: flex; align-items: center; justify-content: center; color: var(--gold-light); flex-shrink: 0; background: rgba(201,164,76,.06); }
+.ic-coa .eye { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-light); font-weight: 600; }
+.ic-coa h3 { font-family: var(--font-display); font-weight: 600; font-size: 30px; margin: 8px 0 10px; }
+.ic-coa p { color: var(--fg-on-navy-2); font-family: var(--font-display); font-size: 19px; font-weight: 400; max-width: 660px; line-height: 1.55; }
+.ic-coa .gold { color: var(--gold-light); font-weight: 600; }
+.ic-coa .coa-cta { margin-top: 18px; }
+
+/* ---------- Payment teaser ---------- */
+.ic-pay { padding: 56px 0 12px; text-align: center; }
+.ic-pay .eye { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-deep); font-weight: 600; margin-bottom: 8px; }
+.ic-pay h2 { font-family: var(--font-display); font-weight: 600; font-size: 30px; color: var(--navy); margin-bottom: 22px; }
+.ic-paypills { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.ic-paypill { display: inline-flex; align-items: center; gap: 10px; border: 1px solid var(--line-strong); border-radius: var(--r-pill); padding: 12px 22px; font-size: 13.5px; color: var(--navy); background: #fff; }
+.ic-paypill .ic { color: var(--gold-deep); }
+.ic-paypill b { color: var(--navy); }
+.ic-paypill .save { color: var(--gold-deep); font-weight: 700; }
+
+/* ---------- Footer ---------- */
+.ic-footer { margin-top: 64px; background: var(--navy-deep); color: #aeb7cc; font-size: 12.5px; }
+.ic-footer .ic-wrap { padding: 38px 22px; }
+.ic-disc { border: 1px solid var(--line-on-navy); border-radius: var(--r-md); padding: 18px 20px; color: #cdd4e3; font-size: 12px; line-height: 1.7; margin-bottom: 26px; }
+.ic-disc b { color: var(--gold-light); }
+.ic-fcols { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 28px; padding-bottom: 22px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.ic-fbrand p { margin: 12px 0 0; color: #8b95ad; }
+.ic-flinks { display: flex; flex-direction: column; gap: 9px; }
+.ic-flinks a { color: #cdd4e3; }
+.ic-flinks a:hover { color: var(--gold-light); }
+.ic-fbot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding-top: 18px; color: #6f7a93; }
+.ic-fbot .ic-ruo { color: #6f7a93; }

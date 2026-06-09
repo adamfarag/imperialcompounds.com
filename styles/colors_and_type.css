@@ -1,0 +1,203 @@
+/* =============================================================
+   IMPERIAL COMPOUNDS — Foundations: Color + Type
+   Quiet luxury + clinical trust. Gold-on-navy, editorial serif.
+   -------------------------------------------------------------
+   Fraunces is self-hosted (variable TTFs in assets/fonts/).
+   Work Sans (body) + IBM Plex Mono load from Google Fonts.
+   ============================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+/* ---------- BRAND DISPLAY SERIF: Fraunces (self-hosted, variable) ---------- */
+@font-face {
+  font-family: "Fraunces";
+  src: url("../assets/fonts/Fraunces_SOFT_WONK_opsz_wght_.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("../assets/fonts/Fraunces-Italic_SOFT_WONK_opsz_wght_.ttf") format("truetype-variations");
+  font-weight: 100 900;
+  font-stretch: 100%;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* ---------- BRAND PALETTE (raw) ---------- */
+  --navy:        #0B1B3A;   /* primary */
+  --navy-deep:   #070F24;   /* deepest — announcement bars, footers */
+  --navy-2:      #102449;   /* raised navy — card gradients, hovers */
+  --navy-3:      #18305c;   /* hairlines on navy, subtle lifts */
+
+  --gold:        #C9A44C;   /* accent */
+  --gold-light:  #E6C878;   /* light gold — text on navy, highlights */
+  --gold-deep:   #A8863A;   /* pressed/active gold */
+  --gold-wash:   #F3ECD9;   /* faint gold tint fill on paper */
+
+  --paper:       #F7F6F2;   /* page background */
+  --paper-2:     #EFEDE5;   /* sunken paper, alt rows */
+  --white:       #FFFFFF;
+
+  /* product packaging cues */
+  --holo:        #D9DEE6;   /* holographic-silver label */
+  --cap-blue:    #2E5C9A;   /* royal-blue flip-cap */
+
+  /* ---------- SEMANTIC: SURFACES ---------- */
+  --bg:            var(--paper);
+  --bg-sunken:     var(--paper-2);
+  --surface:       var(--white);
+  --surface-navy:  var(--navy);
+  --surface-deep:  var(--navy-deep);
+
+  /* ---------- SEMANTIC: TEXT ---------- */
+  --fg:            #0B1B3A;            /* primary ink (navy) */
+  --fg-2:          #46506A;            /* secondary text */
+  --fg-muted:      #8A93A7;            /* captions, meta, RUO */
+  --fg-on-navy:    #EDF1F8;            /* body text on navy */
+  --fg-on-navy-2:  #C4CCDD;            /* secondary on navy */
+  --fg-gold:       var(--gold);
+  --fg-gold-on-navy: var(--gold-light);
+
+  /* ---------- SEMANTIC: LINES / BORDERS ---------- */
+  --line:          #E3DECF;            /* hairline on paper (warm) */
+  --line-strong:   #D6CFB8;
+  --line-gold:     rgba(201,164,76,.35);   /* gold hairline (on navy) */
+  --line-on-navy:  rgba(201,164,76,.22);
+
+  /* ---------- SEMANTIC: STATES ---------- */
+  --success:       #2F7D5B;   /* verified / in-stock */
+  --success-bg:    #E7F1EC;
+  --warning:       #9A6B16;   /* RUO emphasis */
+  --warning-bg:    #FBF3DF;
+  --info:          #2E5C9A;
+
+  /* ---------- TYPE FAMILIES ---------- */
+  --font-display: "Fraunces", "Hoefler Text", Georgia, serif;
+  --font-sans:    "Work Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* ---------- TYPE SCALE (fluid-ish, px) ---------- */
+  --fs-display:  64px;   /* hero serif */
+  --fs-h1:       46px;
+  --fs-h2:       34px;
+  --fs-h3:       24px;
+  --fs-h4:       19px;
+  --fs-body-lg:  18px;
+  --fs-body:     16px;
+  --fs-sm:       14px;
+  --fs-xs:       12.5px;
+  --fs-eyebrow:  12px;   /* letter-spaced uppercase labels */
+
+  /* ---------- TRACKING ---------- */
+  --track-eyebrow: .22em;   /* category labels */
+  --track-wordmark: .14em;
+  --track-peptides: .42em;  /* the "PEPTIDES" sub-line */
+  --track-nav:     .07em;
+  --track-tight:  -.01em;   /* large serif headlines */
+
+  /* ---------- WEIGHTS ---------- */
+  --w-light: 300;
+  --w-reg:   400;
+  --w-med:   500;
+  --w-semi:  600;
+  --w-bold:  700;
+
+  /* ---------- LINE HEIGHTS ---------- */
+  --lh-tight:  1.08;
+  --lh-snug:   1.25;
+  --lh-body:   1.6;
+
+  /* ---------- RADII ---------- */
+  --r-xs: 3px;
+  --r-sm: 5px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-xl: 18px;
+  --r-pill: 999px;
+
+  /* ---------- SPACING (8pt base) ---------- */
+  --sp-1: 4px;  --sp-2: 8px;  --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px;
+  --sp-9: 96px; --sp-10: 128px;
+
+  /* ---------- SHADOWS / ELEVATION ---------- */
+  --sh-sm:  0 1px 2px rgba(11,27,58,.06);
+  --sh-md:  0 6px 18px rgba(11,27,58,.10);
+  --sh-lg:  0 14px 36px rgba(11,27,58,.14);
+  --sh-card: 0 10px 26px rgba(11,27,58,.12);
+  --sh-gold: 0 8px 24px rgba(201,164,76,.28);
+  --sh-inset: inset 0 1px 0 rgba(255,255,255,.06);
+
+  /* ---------- MOTION ---------- */
+  --ease: cubic-bezier(.22,.61,.36,1);   /* soft, expensive ease-out */
+  --ease-in-out: cubic-bezier(.65,.05,.36,1);
+  --dur-fast: .15s;
+  --dur:      .28s;
+  --dur-slow: .5s;
+}
+
+/* =============================================================
+   SEMANTIC TYPE CLASSES
+   ============================================================= */
+
+.ic-eyebrow {
+  font-family: var(--font-sans);
+  font-weight: var(--w-semi);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ic-display {
+  font-family: var(--font-display);
+  font-weight: var(--w-semi);
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg);
+}
+
+.ic-h1 { font-family: var(--font-display); font-weight: var(--w-semi); font-size: var(--fs-h1); line-height: var(--lh-tight); letter-spacing: var(--track-tight); color: var(--fg); }
+.ic-h2 { font-family: var(--font-display); font-weight: var(--w-semi); font-size: var(--fs-h2); line-height: var(--lh-snug); color: var(--fg); }
+.ic-h3 { font-family: var(--font-display); font-weight: var(--w-semi); font-size: var(--fs-h3); line-height: var(--lh-snug); color: var(--fg); }
+.ic-h4 { font-family: var(--font-sans); font-weight: var(--w-semi); font-size: var(--fs-h4); line-height: var(--lh-snug); color: var(--fg); }
+
+/* Reading prose is set in Fraunces (brand serif) for editorial-luxury warmth.
+   Functional UI text (nav, buttons, labels, meta, lab data) stays grotesque/mono. */
+.ic-lead { font-family: var(--font-display); font-weight: var(--w-reg); font-size: 22px; line-height: 1.5; letter-spacing: .005em; color: var(--fg-2); }
+.ic-body { font-family: var(--font-sans); font-weight: var(--w-reg); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--fg); }
+.ic-prose { font-family: var(--font-display); font-weight: var(--w-reg); font-size: var(--fs-body-lg); line-height: 1.55; color: var(--fg-2); }
+.ic-sm   { font-family: var(--font-sans); font-weight: var(--w-reg); font-size: var(--fs-sm); line-height: 1.5; color: var(--fg-2); }
+.ic-caption { font-family: var(--font-sans); font-weight: var(--w-reg); font-size: var(--fs-xs); line-height: 1.4; color: var(--fg-muted); }
+
+.ic-mono { font-family: var(--font-mono); font-weight: var(--w-med); font-size: var(--fs-sm); letter-spacing: .02em; }
+
+/* RUO disclaimer micro-label — tasteful, never shouty */
+.ic-ruo {
+  font-family: var(--font-sans);
+  font-weight: var(--w-med);
+  font-size: 9.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+}
+
+/* Wordmark lockup (CSS fallback when image not used) */
+.ic-wordmark {
+  font-family: var(--font-display);
+  font-weight: var(--w-semi);
+  letter-spacing: var(--track-wordmark);
+  line-height: .95;
+}
+.ic-wordmark small {
+  display: block;
+  font-family: var(--font-sans);
+  font-weight: var(--w-med);
+  letter-spacing: var(--track-peptides);
+  font-size: .28em;
+}

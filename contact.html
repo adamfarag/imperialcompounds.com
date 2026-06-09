@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Contact — Imperial Compounds</title>
+<meta name="description" content="Contact Imperial Compounds — orders, COA requests, volume pricing. Edmonton, AB. We typically reply within one business day." />
+<link rel="icon" type="image/png" href="assets/brand/crest.png" />
+<link rel="stylesheet" href="styles/colors_and_type.css" />
+<link rel="stylesheet" href="styles/kit.css" />
+<link rel="stylesheet" href="styles/screens.css" />
+<link rel="stylesheet" href="styles/pages.css" />
+<script defer src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+<script defer src="js/site.js"></script>
+</head>
+<body>
+<div class="ic-app">
+
+<div class="ic-annc">Every batch independently lab tested&nbsp;&nbsp;·&nbsp;&nbsp;Discreet Canada-wide shipping&nbsp;&nbsp;·&nbsp;&nbsp;Interac &amp; crypto accepted</div>
+
+<header class="ic-header">
+  <div class="ic-wrap ic-hbar">
+    <a class="ic-brandlock" href="index.html">
+      <img src="assets/brand/crest.png" alt="Imperial Compounds crest" style="height:34px" />
+      <span class="ic-brandlock-txt" style="color:#fff">
+        <span class="wm">IMPERIAL COMPOUNDS</span>
+        <small>PEPTIDES</small>
+      </span>
+    </a>
+    <nav class="ic-nav">
+      <a href="product.html">Retatrutide 15 mg</a>
+      <a href="verify.html" class="ic-nav-verify"><span class="ic" style="font-size:15px"><i data-lucide="shield-check"></i></span> Third-party testing</a>
+      <a href="faq.html">FAQ</a>
+      <a href="faq.html#shipping">Shipping</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="ic-hdr-right">
+      <a class="ic-cart" href="checkout.html"><span class="ic" style="font-size:16px"><i data-lucide="shopping-bag"></i></span> <span class="ic-cart-lbl">Box</span>&nbsp;<span data-cart-count>(0)</span></a>
+      <button class="ic-burger" aria-label="Open menu"><span class="ic" style="font-size:20px"><i data-lucide="menu"></i></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="ic-scrim"></div>
+<aside class="ic-drawer" role="dialog" aria-label="Menu">
+  <div class="ic-drawer-top">
+    <a class="ic-brandlock" href="index.html">
+      <img src="assets/brand/crest.png" alt="" style="height:34px" />
+      <span class="ic-brandlock-txt" style="color:#fff"><span class="wm">IMPERIAL COMPOUNDS</span><small>PEPTIDES</small></span>
+    </a>
+    <button class="ic-drawer-x" aria-label="Close menu"><span class="ic" style="font-size:20px"><i data-lucide="x"></i></span></button>
+  </div>
+  <div class="ic-drawer-scroll">
+    <div class="ic-drawer-grp">Shop</div>
+    <a class="ic-drawer-link" href="product.html">Retatrutide 15 mg <span class="ic" style="font-size:16px"><i data-lucide="chevron-right"></i></span></a>
+    <div class="ic-drawer-grp">Trust &amp; info</div>
+    <a class="ic-drawer-link gold" href="verify.html"><span><span class="ic" style="font-size:16px"><i data-lucide="shield-check"></i></span> Third-party testing</span><span class="ic" style="font-size:16px"><i data-lucide="chevron-right"></i></span></a>
+    <a class="ic-drawer-link" href="faq.html">FAQ <span class="ic" style="font-size:16px"><i data-lucide="chevron-right"></i></span></a>
+    <a class="ic-drawer-link" href="faq.html#shipping">Shipping &amp; returns <span class="ic" style="font-size:16px"><i data-lucide="chevron-right"></i></span></a>
+    <a class="ic-drawer-link" href="contact.html">Contact <span class="ic" style="font-size:16px"><i data-lucide="chevron-right"></i></span></a>
+    <div class="ic-drawer-cta">
+      <a class="ic-btn ic-btn-gold ic-btn-md" href="checkout.html" style="width:100%"><span class="ic" style="font-size:16px"><i data-lucide="shopping-bag"></i></span> View your box <span data-cart-count>(0)</span></a>
+    </div>
+  </div>
+  <div class="ic-drawer-ruo">For research use only — not for human consumption</div>
+</aside>
+
+<div style="flex:1">
+
+  <div class="ic-page-hero">
+    <div class="ic-wrap">
+      <div class="eye">Contact</div>
+      <h1>Talk to us.</h1>
+      <p>Questions about an order, a certificate, payment, or volume pricing — reach us directly. We typically reply within one business day.</p>
+    </div>
+  </div>
+
+  <main class="ic-wrap ic-page-body">
+    <div class="ic-contact-grid">
+
+      <!-- TODO-CONFIRM-EMAIL: hello@imperialcompounds.com -->
+      <form class="ic-contact-form" data-contact-form data-mailto="hello@imperialcompounds.com">
+        <h3>Send a message</h3>
+        <div class="sub">Opens in your email app, pre-addressed and pre-filled. For COA questions, include the lot number from your vial.</div>
+        <div class="ic-cf-fields">
+          <label><span>Full name</span><input id="cf-name" placeholder="Research recipient" autocomplete="name" /></label>
+          <label><span>Email</span><input id="cf-email" type="email" placeholder="you@example.com" autocomplete="email" /></label>
+          <label class="full"><span>Topic</span>
+            <select id="cf-topic">
+              <option value="Order or shipping">Order or shipping</option>
+              <option value="COA / testing">COA / testing</option>
+              <option value="Payment (Interac / crypto)">Payment (Interac / crypto)</option>
+              <option value="Volume pricing">Volume pricing</option>
+              <option value="Something else">Something else</option>
+            </select>
+          </label>
+          <label class="full"><span>Message</span><textarea id="cf-message" placeholder="How can we help?"></textarea></label>
+        </div>
+        <div class="ic-cf-submit">
+          <button class="ic-btn ic-btn-gold ic-btn-lg" type="submit">Compose email</button>
+        </div>
+        <div class="ic-cf-sent" style="display:none">
+          <span class="ic" style="font-size:18px"><i data-lucide="check"></i></span>
+          Your email app should have opened with the message pre-filled — just press send.
+        </div>
+      </form>
+
+      <aside class="ic-contact-aside">
+        <div class="ic-contact-card">
+          <div class="eye">Direct lines</div>
+          <div class="ic-contact-row">
+            <span class="ic" style="font-size:18px"><i data-lucide="mail"></i></span>
+            <!-- TODO-CONFIRM-EMAIL: hello@imperialcompounds.com -->
+            <div><div class="ct-k">General</div><div class="ct-v mono">hello@imperialcompounds.com</div></div>
+          </div>
+          <div class="ic-contact-row">
+            <span class="ic" style="font-size:18px"><i data-lucide="send"></i></span>
+            <!-- TODO-CONFIRM-EMAIL: orders@imperialcompounds.com -->
+            <div><div class="ct-k">Orders &amp; COA requests</div><div class="ct-v mono">orders@imperialcompounds.com</div></div>
+          </div>
+          <div class="ic-contact-row">
+            <span class="ic" style="font-size:18px"><i data-lucide="map-pin"></i></span>
+            <div><div class="ct-k">Based in</div><div class="ct-v">Edmonton, Alberta · Canada</div></div>
+          </div>
+          <div class="ic-contact-row">
+            <span class="ic" style="font-size:18px"><i data-lucide="clock"></i></span>
+            <div><div class="ct-k">Response time</div><div class="ct-v">Within one business day</div></div>
+          </div>
+        </div>
+
+        <div class="ic-contact-navy">
+          <div class="eye">Testing questions?</div>
+          <h4>The COA for your lot is one email away.</h4>
+          <p>Every batch is independently tested by an accredited third-party lab. Send us the lot number from your vial and we reply with the certificate for that batch.</p>
+          <a class="ic-btn ic-btn-ghostgold ic-btn-md" href="verify.html">
+            <span class="ic" style="font-size:16px"><i data-lucide="shield-check"></i></span> How our testing works
+          </a>
+        </div>
+
+        <div class="ic-badge ic-badge-ruo">For research use only — not for human consumption</div>
+      </aside>
+    </div>
+  </main>
+
+</div>
+
+<footer class="ic-footer">
+  <div class="ic-wrap">
+    <div class="ic-disc">
+      <b>Research Use Only.</b> All products sold by Imperial Compounds are intended strictly for in-vitro laboratory research and development. They are <b>not for human or animal consumption</b>, not drugs, foods, cosmetics, or medical devices, and are not intended to diagnose, treat, cure, or prevent any condition. By purchasing, the buyer affirms they are a qualified researcher and accept full responsibility for lawful handling. Nothing herein is medical advice.
+    </div>
+    <div class="ic-fcols">
+      <div class="ic-fbrand">
+        <a class="ic-brandlock" href="index.html">
+          <img src="assets/brand/crest.png" alt="" style="height:34px" />
+          <span class="ic-brandlock-txt" style="color:#fff"><span class="wm">IMPERIAL COMPOUNDS</span><small>PEPTIDES</small></span>
+        </a>
+        <p>Edmonton, Alberta · Canada-wide discreet shipping</p>
+      </div>
+      <div class="ic-flinks">
+        <a href="product.html">Retatrutide 15 mg</a>
+        <a href="verify.html">Third-party testing</a>
+        <a href="faq.html">FAQ</a>
+        <a href="faq.html#shipping">Shipping &amp; returns</a>
+        <a href="contact.html">Contact</a>
+      </div>
+    </div>
+    <div class="ic-fbot">
+      <span>© 2026 Imperial Compounds · Edmonton, AB</span>
+      <span class="ic-ruo">For research use only — not for human consumption</span>
+    </div>
+  </div>
+</footer>
+
+<div class="ic-toast">
+  <span class="ic" style="font-size:17px"><i data-lucide="check"></i></span>
+  <span data-toast-msg></span>
+  <a href="checkout.html">View box →</a>
+</div>
+
+</div>
+</body>
+</html>
