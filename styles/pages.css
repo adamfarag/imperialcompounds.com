@@ -449,3 +449,117 @@
   .ic-404 .code { font-size: 68px; }
   .ic-404 h1 { font-size: 26px; }
 }
+
+/* ============================================================
+   EMAIL CAPTURE POPUP (injected by site.js)
+   ============================================================ */
+.ic-pop-scrim {
+  position: fixed; inset: 0; z-index: 120;
+  background: rgba(7,15,36,.62);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  animation: ic-scrim-in var(--dur) var(--ease);
+}
+.ic-pop {
+  position: relative; width: min(420px, 100%);
+  background: linear-gradient(160deg, var(--navy-deep), var(--navy) 60%, var(--navy-2));
+  border: 1px solid var(--line-gold); border-radius: var(--r-lg);
+  box-shadow: 0 30px 70px rgba(0,0,0,.5);
+  padding: 34px 30px 26px; text-align: center; color: #fff;
+  max-height: calc(100vh - 32px); overflow-y: auto;
+  animation: ic-pop-in var(--dur) var(--ease);
+}
+@keyframes ic-pop-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.ic-pop::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(ellipse at 50% -10%, rgba(201,164,76,.2), transparent 60%);
+  pointer-events: none;
+}
+.ic-pop > * { position: relative; }
+.ic-pop-x {
+  position: absolute; top: 10px; right: 10px;
+  width: 34px; height: 34px; border-radius: var(--r-sm);
+  background: transparent; border: 1px solid var(--line-on-navy);
+  color: var(--gold-light); font-size: 20px; line-height: 1; cursor: pointer;
+}
+.ic-pop-x:hover { background: var(--navy-2); }
+.ic-pop .crest { height: 52px; margin: 0 auto 12px; display: block; }
+.ic-pop .eye { color: var(--gold-light); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; }
+.ic-pop h3 { font-family: var(--font-display); font-weight: 600; font-size: 26px; line-height: 1.15; margin: 8px 0 6px; }
+.ic-pop .sub { font-size: 13.5px; color: var(--fg-on-navy-2); margin-bottom: 18px; }
+.ic-pop form { display: flex; flex-direction: column; gap: 10px; }
+.ic-pop input {
+  font-family: var(--font-sans); font-size: 14px; color: #fff; width: 100%;
+  background: rgba(255,255,255,.07); border: 1px solid var(--line-on-navy);
+  border-radius: var(--r-sm); padding: 12px 13px; outline: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.ic-pop input::placeholder { color: var(--fg-on-navy-2); }
+.ic-pop input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,.18); }
+.ic-pop .err { font-size: 12.5px; color: #E8A6A6; margin-top: 2px; }
+.ic-pop .consent { font-size: 10.5px; line-height: 1.55; color: var(--fg-on-navy-2); margin-top: 8px; }
+.ic-pop .done {
+  margin-top: 6px; padding: 16px 14px; font-size: 14.5px; line-height: 1.5;
+  border: 1px solid var(--line-gold); border-radius: var(--r-sm);
+  background: rgba(201,164,76,.08); color: var(--fg-on-navy);
+}
+.ic-pop .done b { color: var(--gold-light); }
+@media (max-width: 400px) {
+  .ic-pop { padding: 30px 20px 22px; }
+  .ic-pop h3 { font-size: 23px; }
+}
+
+/* ============================================================
+   SIGNUP BAND (index, above footer)
+   ============================================================ */
+.ic-signup {
+  margin: 26px 0 56px; padding: 40px 28px; text-align: center; color: #fff;
+  background: linear-gradient(150deg, var(--navy-deep), var(--navy) 60%, var(--navy-2));
+  border: 1px solid var(--line-gold); border-radius: var(--r-lg);
+  position: relative; overflow: hidden;
+}
+.ic-signup::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% -20%, rgba(201,164,76,.18), transparent 60%);
+  pointer-events: none;
+}
+.ic-signup .inner { position: relative; max-width: 520px; margin: 0 auto; }
+.ic-signup .eye { color: var(--gold-light); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; }
+.ic-signup h3 { font-family: var(--font-display); font-weight: 600; font-size: 28px; margin: 8px 0 0; }
+.ic-signup form { display: flex; gap: 10px; margin-top: 18px; }
+.ic-signup input {
+  flex: 1; min-width: 0; font-family: var(--font-sans); font-size: 14px; color: #fff;
+  background: rgba(255,255,255,.07); border: 1px solid var(--line-on-navy);
+  border-radius: var(--r-sm); padding: 12px 13px; outline: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.ic-signup input::placeholder { color: var(--fg-on-navy-2); }
+.ic-signup input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,.18); }
+.ic-signup .msg { margin-top: 14px; font-size: 13.5px; color: #E8A6A6; }
+.ic-signup .msg.ok { color: var(--gold-light); font-weight: 600; }
+.ic-signup .fine { font-size: 10.5px; line-height: 1.55; color: var(--fg-on-navy-2); margin-top: 12px; }
+@media (max-width: 600px) {
+  .ic-signup { padding: 30px 18px; margin-bottom: 44px; }
+  .ic-signup h3 { font-size: 24px; }
+  .ic-signup form { flex-direction: column; }
+  .ic-signup form .ic-btn { width: 100%; }
+}
+
+/* ============================================================
+   CHECKOUT COUPON
+   ============================================================ */
+.ic-coupon { margin: 14px 0 2px; }
+.ic-coupon .row { display: flex; gap: 8px; }
+.ic-coupon input {
+  flex: 1; min-width: 0; font-family: var(--font-sans); font-size: 13.5px; color: var(--navy);
+  background: var(--paper); border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm); padding: 10px 12px; outline: none;
+  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+}
+.ic-coupon input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,.16); background: #fff; }
+.ic-coupon .err { font-size: 12.5px; color: #A8442E; margin-top: 8px; }
+.ic-sum-rows .disc .rm-coupon {
+  background: none; border: none; cursor: pointer; padding: 0 2px;
+  color: var(--gold-deep); font-size: 15px; line-height: 1;
+}
+.ic-sum-rows .disc .rm-coupon:hover { color: var(--navy); }

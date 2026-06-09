@@ -1,7 +1,8 @@
 /* =========================================================
    Imperial Compounds — site.js (vanilla, no build step)
    Cart (localStorage, single SKU), header count, mobile
-   drawer, accordions, steppers, mailto order composer.
+   drawer, accordions, steppers, mailto order composer,
+   email-capture popup + signup band, checkout coupon.
    ========================================================= */
 (function () {
   'use strict';
@@ -19,6 +20,16 @@
   var ORDER_EMAIL = 'orders@imperialcompounds.com'; /* TODO-CONFIRM-EMAIL */
   var SHIPPING_FLAT = 18; /* TODO-CONFIRM flat shipping rate */
   var CART_KEY = 'ic_cart_qty';
+  var COUPON_KEY = 'ic_coupon';
+  var COUPON_CODE = 'IMPERIAL10';
+  var COUPON_RATE = 0.10; /* 10% off product subtotal, not shipping */
+  var POPUP_KEY = 'ic_popup_seen';
+  var SUBSCRIBE_URL = '/api/subscribe';
+
+  function money(n) {
+    n = Math.round(n * 100) / 100;
+    return '$' + (n % 1 === 0 ? String(n) : n.toFixed(2));
+  }
 
   /* ---------- Icons (lucide CDN) ---------- */
   function renderIcons() {
@@ -43,6 +54,29 @@
     var n = getQty();
     document.querySelectorAll('[data-cart-count]').forEach(function (el) {
       el.textContent = '(' + n + ')';
+    });
+  }
+
+  /* ---------- Coupon (persisted with cart) ---------- */
+  function getCoupon() {
+    return localStorage.getItem(COUPON_KEY) === COUPON_CODE ? COUPON_CODE : null;
+  }
+  function setCoupon(code) {
+    if (code) localStorage.setItem(COUPON_KEY, code);
+    else localStorage.removeItem(COUPON_KEY);
+  }
+
+  /* ---------- Subscribe (popup + signup band) ---------- */
+  function isEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  }
+  function subscribe(email, phone) {
+    return fetch(SUBSCRIBE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, phone: phone || '' })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('subscribe failed');
     });
   }
 
@@ -125,24 +159,62 @@
     var empty = document.querySelector('[data-co-empty]');
     var rail = 'interac';
 
-    function paint() {
+    function totals() {
       var n = getQty();
-      if (n === 0) {
+      var sub = PRODUCT.price * n;
+      var coupon = getCoupon();
+      var disc = coupon ? Math.round(sub * COUPON_RATE * 100) / 100 : 0;
+      return { n: n, sub: sub, coupon: coupon, disc: disc, total: sub - disc + SHIPPING_FLAT };
+    }
+
+    function paint() {
+      var t = totals();
+      if (t.n === 0) {
         filled.style.display = 'none';
         empty.style.display = '';
         return;
       }
       filled.style.display = '';
       empty.style.display = 'none';
-      var sub = PRODUCT.price * n;
-      var total = sub + SHIPPING_FLAT;
       var q = function (sel) { return page.querySelector(sel); };
-      q('[data-co-qty]').textContent = n;
-      q('[data-co-line-price]').textContent = '$' + sub;
-      q('[data-co-subtotal]').textContent = '$' + sub + ' CAD';
-      q('[data-co-shipping]').textContent = '$' + SHIPPING_FLAT;
-      q('[data-co-total]').textContent = '$' + total;
+      q('[data-co-qty]').textContent = t.n;
+      q('[data-co-line-price]').textContent = money(t.sub);
+      q('[data-co-subtotal]').textContent = money(t.sub) + ' CAD';
+      q('[data-co-shipping]').textContent = money(SHIPPING_FLAT);
+      q('[data-co-total]').textContent = money(t.total);
+      var discRow = q('[data-co-disc-row]');
+      var entry = q('[data-coupon-entry]');
+      if (discRow) {
+        discRow.style.display = t.coupon ? '' : 'none';
+        if (t.coupon) q('[data-co-disc]').textContent = '−$' + t.disc.toFixed(2);
+      }
+      if (entry) entry.style.display = t.coupon ? 'none' : '';
     }
+
+    /* coupon */
+    var couponInput = page.querySelector('[data-coupon-input]');
+    var couponErr = page.querySelector('[data-coupon-err]');
+    function applyCoupon() {
+      var code = (couponInput.value || '').trim().toUpperCase();
+      if (code === COUPON_CODE) {
+        setCoupon(COUPON_CODE);
+        couponErr.style.display = 'none';
+        couponInput.value = '';
+        paint();
+      } else {
+        couponErr.style.display = '';
+      }
+    }
+    var couponApply = page.querySelector('[data-coupon-apply]');
+    if (couponApply) couponApply.addEventListener('click', applyCoupon);
+    if (couponInput) couponInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+    });
+    var couponRemove = page.querySelector('[data-coupon-remove]');
+    if (couponRemove) couponRemove.addEventListener('click', function () {
+      setCoupon(null);
+      paint();
+    });
 
     page.querySelectorAll('[data-co-minus]').forEach(function (b) {
       b.addEventListener('click', function () { setQty(Math.max(1, getQty() - 1)); paint(); });
@@ -183,17 +255,17 @@
         }
         return;
       }
-      var sub = PRODUCT.price * n;
-      var total = sub + SHIPPING_FLAT;
+      var t = totals();
       var method = rail === 'crypto' ? 'Crypto (BTC / ETH / USDC)' : 'Interac e-Transfer';
       var subject = 'Order — ' + PRODUCT.name + ' ' + PRODUCT.dose + ' × ' + n;
       var body =
         'New order — Imperial Compounds\n\n' +
         'Product: ' + PRODUCT.name + ' ' + PRODUCT.dose + ' (lyophilized powder, single vial)\n' +
         'Quantity: ' + n + ' vial' + (n > 1 ? 's' : '') + '\n' +
-        'Subtotal: $' + sub + ' CAD\n' +
-        'Shipping: $' + SHIPPING_FLAT + ' CAD\n' +
-        'Total: $' + total + ' CAD\n' +
+        'Subtotal: ' + money(t.sub) + ' CAD\n' +
+        (t.coupon ? 'Coupon ' + t.coupon + ': −$' + t.disc.toFixed(2) + ' CAD\n' : '') +
+        'Shipping: ' + money(SHIPPING_FLAT) + ' CAD\n' +
+        'Total: ' + money(t.total) + ' CAD\n' +
         'Payment method: ' + method + '\n\n' +
         'Name: ' + name + '\n' +
         'Email: ' + email + '\n' +
@@ -235,6 +307,110 @@
     });
   }
 
+  /* ---------- Email capture popup (all pages except checkout) ---------- */
+  function initPopup() {
+    if (document.querySelector('[data-checkout]')) return;
+    if (localStorage.getItem(POPUP_KEY)) return;
+    setTimeout(openPopup, 2500);
+  }
+
+  function openPopup() {
+    var scrim = document.createElement('div');
+    scrim.className = 'ic-pop-scrim';
+    scrim.innerHTML =
+      '<div class="ic-pop" role="dialog" aria-modal="true" aria-label="Unlock 10% off your first order">' +
+        '<button class="ic-pop-x" type="button" aria-label="Close">&times;</button>' +
+        '<img class="crest" src="assets/brand/crest.png" alt="" />' +
+        '<div class="eye">Imperial Compounds</div>' +
+        '<h3>Unlock 10% off your first order</h3>' +
+        '<p class="sub">Join the list and we email your code.</p>' +
+        '<form novalidate>' +
+          '<input type="email" name="email" placeholder="Email address" autocomplete="email" required />' +
+          '<input type="tel" name="phone" placeholder="Phone (optional)" autocomplete="tel" />' +
+          '<button class="ic-btn ic-btn-gold ic-btn-md" type="submit">Get my 10% code</button>' +
+          '<p class="err" data-pop-err style="display:none"></p>' +
+          '<p class="consent">By signing up you agree to receive occasional emails from Imperial Compounds. Unsubscribe anytime.</p>' +
+        '</form>' +
+        '<div class="done" data-pop-done style="display:none">Check your inbox — your code is <b>IMPERIAL10</b></div>' +
+      '</div>';
+    document.body.appendChild(scrim);
+    document.body.style.overflow = 'hidden';
+
+    var form = scrim.querySelector('form');
+    var err = scrim.querySelector('[data-pop-err]');
+
+    function close() {
+      document.removeEventListener('keydown', onKey);
+      scrim.remove();
+      document.body.style.overflow = '';
+    }
+    function dismiss() {
+      localStorage.setItem(POPUP_KEY, '1');
+      close();
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') dismiss();
+    }
+    scrim.addEventListener('click', function (e) {
+      if (e.target === scrim) dismiss();
+    });
+    scrim.querySelector('.ic-pop-x').addEventListener('click', dismiss);
+    document.addEventListener('keydown', onKey);
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      var phone = form.phone.value.trim();
+      if (!isEmail(email)) {
+        err.textContent = 'Please enter a valid email address.';
+        err.style.display = '';
+        form.email.focus();
+        return;
+      }
+      err.style.display = 'none';
+      var btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      subscribe(email, phone).then(function () {
+        localStorage.setItem(POPUP_KEY, '1');
+        form.style.display = 'none';
+        scrim.querySelector('[data-pop-done]').style.display = '';
+      }).catch(function () {
+        btn.disabled = false;
+        err.textContent = 'Something went wrong — try again.';
+        err.style.display = '';
+      });
+    });
+  }
+
+  /* ---------- Inline signup band (index footer) ---------- */
+  function initSignup() {
+    var form = document.querySelector('[data-signup-form]');
+    if (!form) return;
+    var msg = document.querySelector('[data-signup-msg]');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = form.email.value.trim();
+      function say(text, ok) {
+        msg.textContent = text;
+        msg.classList.toggle('ok', !!ok);
+        msg.style.display = '';
+      }
+      if (!isEmail(email)) {
+        say('Please enter a valid email address.', false);
+        return;
+      }
+      var btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      subscribe(email, '').then(function () {
+        form.style.display = 'none';
+        say('Check your inbox — your code is IMPERIAL10', true);
+      }).catch(function () {
+        btn.disabled = false;
+        say('Something went wrong — try again.', false);
+      });
+    });
+  }
+
   /* ---------- Boot ---------- */
   document.addEventListener('DOMContentLoaded', function () {
     renderIcons();
@@ -244,5 +420,7 @@
     initProduct();
     initCheckout();
     initContact();
+    initPopup();
+    initSignup();
   });
 })();

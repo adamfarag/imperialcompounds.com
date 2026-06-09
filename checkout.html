@@ -123,23 +123,23 @@
               <span class="radio"></span>
               <div class="rail-top"><span class="rail-nm">Interac e-Transfer</span><span class="rail-ic"><span class="ic" style="font-size:19px"><i data-lucide="landmark"></i></span></span></div>
               <!-- TODO-CONFIRM-EMAIL: orders@imperialcompounds.com -->
-              <div class="rail-desc">Canadian bank transfer. Send your e-Transfer to <span class="mono">orders@imperialcompounds.com</span> once we confirm your order.</div>
+              <div class="rail-desc">Send your e-Transfer to <span class="mono">orders@imperialcompounds.com</span> once we confirm your order.</div>
               <span class="rail-tag">Recommended for Canada</span>
             </button>
             <button class="ic-rail" data-rail="crypto">
               <span class="radio"></span>
               <div class="rail-top"><span class="rail-nm">Crypto</span><span class="rail-ic gold"><span class="ic" style="font-size:19px"><i data-lucide="bitcoin"></i></span></span></div>
-              <div class="rail-desc">BTC · ETH · USDC accepted. You'll receive the address after we confirm your order.</div>
+              <div class="rail-desc">BTC · ETH · USDC — we send the address once we confirm your order.</div>
               <span class="rail-tag">Private settlement</span>
             </button>
           </div>
           <div class="ic-rail-note" data-note-interac>
             <span class="ic" style="font-size:15px"><i data-lucide="info"></i></span>
-            Place the order below — it opens an email with everything pre-filled. We reply to confirm your total and the e-Transfer details. No card details, ever.
+            Placing the order opens a pre-filled email; we reply with e-Transfer details. No card details, ever.
           </div>
           <div class="ic-rail-note" data-note-crypto style="display:none">
             <span class="ic" style="font-size:15px"><i data-lucide="info"></i></span>
-            Place the order below — once we confirm it, we email you the payment address for your chosen coin. We ship when the transaction confirms.
+            Placing the order opens a pre-filled email; we reply with the payment address and ship when the transaction confirms.
           </div>
         </section>
       </div>
@@ -150,8 +150,19 @@
           <h4>Order summary</h4>
           <div class="ic-sum-rows">
             <div><span>Retatrutide 15 mg · single vial</span><span data-co-subtotal>$100 CAD</span></div>
+            <div class="disc" data-co-disc-row style="display:none">
+              <span>Coupon IMPERIAL10 <button class="rm-coupon" data-coupon-remove type="button" aria-label="Remove coupon">&times;</button></span>
+              <span data-co-disc>−$10.00</span>
+            </div>
             <!-- TODO-CONFIRM: flat shipping rate (placeholder $18) -->
             <div><span>Discreet shipping</span><span data-co-shipping>$18</span></div>
+          </div>
+          <div class="ic-coupon" data-coupon-entry>
+            <div class="row">
+              <input data-coupon-input placeholder="Coupon code" aria-label="Coupon code" autocomplete="off" />
+              <button class="ic-btn ic-btn-ghost ic-btn-md" data-coupon-apply type="button">Apply</button>
+            </div>
+            <p class="err" data-coupon-err style="display:none">That code isn't valid.</p>
           </div>
           <div class="ic-sum-total"><span>Total</span><span><span data-co-total>$118</span> <small>CAD</small></span></div>
           <button class="ic-btn ic-btn-gold ic-btn-lg" style="width:100%" data-place-order>Place order by email</button>
@@ -172,7 +183,7 @@
 <footer class="ic-footer">
   <div class="ic-wrap">
     <div class="ic-disc">
-      <b>Research Use Only.</b> All products sold by Imperial Compounds are intended strictly for in-vitro laboratory research and development. They are <b>not for human or animal consumption</b>, not drugs, foods, cosmetics, or medical devices, and are not intended to diagnose, treat, cure, or prevent any condition. By purchasing, the buyer affirms they are a qualified researcher and accept full responsibility for lawful handling. Nothing herein is medical advice.
+      <b>Research Use Only.</b> All Imperial Compounds products are strictly for in-vitro laboratory research — <b>not for human or animal consumption</b>, not drugs, foods, cosmetics, or medical devices, and not intended to diagnose, treat, cure, or prevent any condition. Buyers affirm they are qualified researchers responsible for lawful handling. Nothing here is medical advice.
     </div>
     <div class="ic-fcols">
       <div class="ic-fbrand">
