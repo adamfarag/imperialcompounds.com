@@ -70,11 +70,14 @@
   function isEmail(v) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
   }
+  function isPhone(v) {
+    return (v.match(/\d/g) || []).length >= 10;
+  }
   function subscribe(email, phone) {
     return fetch(SUBSCRIBE_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, phone: phone || '' })
+      body: JSON.stringify({ email: email || '', phone: phone || '' })
     }).then(function (res) {
       if (!res.ok) throw new Error('subscribe failed');
     });
@@ -323,15 +326,15 @@
         '<img class="crest" src="assets/brand/crest.png" alt="" />' +
         '<div class="eye">Imperial Compounds</div>' +
         '<h3>Unlock 10% off your first order</h3>' +
-        '<p class="sub">Join the list and we email your code.</p>' +
+        '<p class="sub">Join the list and we send your code.</p>' +
         '<form novalidate>' +
-          '<input type="email" name="email" placeholder="Email address" autocomplete="email" required />' +
-          '<input type="tel" name="phone" placeholder="Phone (optional)" autocomplete="tel" />' +
+          '<input type="tel" name="phone" placeholder="Phone number" autocomplete="tel" required />' +
+          '<input type="email" name="email" placeholder="Email (optional)" autocomplete="email" />' +
           '<button class="ic-btn ic-btn-gold ic-btn-md" type="submit">Get my 10% code</button>' +
           '<p class="err" data-pop-err style="display:none"></p>' +
-          '<p class="consent">By signing up you agree to receive occasional emails from Imperial Compounds. Unsubscribe anytime.</p>' +
+          '<p class="consent">By signing up you agree to receive occasional texts and emails from Imperial Compounds. Reply STOP or unsubscribe anytime.</p>' +
         '</form>' +
-        '<div class="done" data-pop-done style="display:none">Check your inbox — your code is <b>IMPERIAL10</b></div>' +
+        '<div class="done" data-pop-done style="display:none">You’re in — your code is <b>IMPERIAL10</b></div>' +
       '</div>';
     document.body.appendChild(scrim);
     document.body.style.overflow = 'hidden';
@@ -361,7 +364,13 @@
       e.preventDefault();
       var email = form.email.value.trim();
       var phone = form.phone.value.trim();
-      if (!isEmail(email)) {
+      if (!isPhone(phone)) {
+        err.textContent = 'Please enter a valid phone number.';
+        err.style.display = '';
+        form.phone.focus();
+        return;
+      }
+      if (email && !isEmail(email)) {
         err.textContent = 'Please enter a valid email address.';
         err.style.display = '';
         form.email.focus();
