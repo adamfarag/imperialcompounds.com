@@ -12,6 +12,17 @@
 <link rel="stylesheet" href="styles/pages.css" />
 <script defer src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script defer src="js/site.js"></script>
+<style>
+  .ic-co-confirm { max-width: 600px; margin: 30px auto 8px; background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--sh-card); padding: 40px 38px; text-align: center; }
+  .ic-co-confirm .ic-co-confirm-icon { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: var(--success-bg); color: var(--success); display: flex; align-items: center; justify-content: center; border: 1px solid #BFDDCE; }
+  .ic-co-confirm .eye { font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-deep); font-weight: 600; }
+  .ic-co-confirm h1 { font-family: var(--font-display); font-weight: 600; font-size: 32px; color: var(--navy); line-height: 1.1; margin: 8px 0 18px; }
+  .ic-co-confirm .ic-co-confirm-instr { font-size: 14.5px; line-height: 1.65; color: var(--fg-2); margin: 0 auto 16px; max-width: 460px; }
+  .ic-co-confirm .ic-co-confirm-instr .mono { font-family: var(--font-mono); color: var(--navy); font-weight: 600; }
+  .ic-co-confirm .ic-co-confirm-note { font-size: 13px; color: var(--fg-muted); margin: 0 0 22px; }
+  .ic-co-confirm .ic-co-confirm-ruo { font-size: 11px; letter-spacing: .04em; color: var(--fg-muted); border-top: 1px solid var(--line); padding-top: 18px; margin-top: 6px; }
+  @media (max-width: 640px) { .ic-co-confirm { padding: 30px 20px; } .ic-co-confirm h1 { font-size: 26px; } }
+</style>
 </head>
 <body>
 <div class="ic-app">
@@ -112,7 +123,8 @@
           <div class="ic-co-fields">
             <label><span>Full name</span><input id="co-name" placeholder="Research recipient" autocomplete="name" /></label>
             <label><span>Email</span><input id="co-email" type="email" placeholder="you@example.com" autocomplete="email" /></label>
-            <label class="full"><span>City</span><input id="co-city" placeholder="Your city" autocomplete="address-level2" /></label>
+            <label><span>Phone (optional)</span><input id="co-phone" type="tel" placeholder="(555) 555-5555" autocomplete="tel" /></label>
+            <label><span>City</span><input id="co-city" placeholder="Your city" autocomplete="address-level2" /></label>
           </div>
         </section>
 
@@ -165,7 +177,7 @@
             <p class="err" data-coupon-err style="display:none">That code isn't valid.</p>
           </div>
           <div class="ic-sum-total"><span>Total</span><span><span data-co-total>$118</span> <small>CAD</small></span></div>
-          <button class="ic-btn ic-btn-gold ic-btn-lg" style="width:100%" data-place-order>Place order by email</button>
+          <button class="ic-btn ic-btn-gold ic-btn-lg" style="width:100%" data-place-order>Place order</button>
           <p data-co-hint style="display:none;margin-top:12px;font-size:12.5px;line-height:1.6;color:var(--gold-deep)"></p>
           <div class="ic-sum-trust">
             <span><span class="ic" style="font-size:14px"><i data-lucide="shield-check"></i></span> Every batch third-party lab tested</span>
@@ -175,6 +187,19 @@
           <div class="ic-sum-ruo">For research use only — not for human consumption. By ordering you affirm you are a qualified researcher.</div>
         </div>
       </aside>
+    </div>
+  </main>
+
+  <!-- Confirmation state (shown after a successful order POST) -->
+  <main class="ic-wrap ic-checkout" data-co-confirm style="display:none">
+    <div class="ic-co-confirm">
+      <div class="ic-co-confirm-icon"><span class="ic" style="font-size:30px"><i data-lucide="check"></i></span></div>
+      <div class="eye">Order received</div>
+      <h1 data-confirm-title>Order received</h1>
+      <p class="ic-co-confirm-instr" data-confirm-instr></p>
+      <p class="ic-co-confirm-note">We'll confirm by email/text once payment lands.</p>
+      <a class="ic-btn ic-btn-ghost ic-btn-md" href="product.html">Back to shop</a>
+      <div class="ic-co-confirm-ruo">For research use only. Not for human consumption. By ordering you affirm you are a qualified researcher.</div>
     </div>
   </main>
 

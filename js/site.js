@@ -10,6 +10,7 @@
   /* ---------- Catalog: exactly one SKU ---------- */
   var PRODUCT = {
     id: 'retatrutide-15',
+    sku: 'reta-15mg', // backend inventory/order SKU
     name: 'Retatrutide',
     dose: '15 mg',
     desc: '15 mg · lyophilized powder · single vial',
@@ -25,6 +26,8 @@
   var COUPON_RATE = 0.10; /* 10% off product subtotal, not shipping */
   var POPUP_KEY = 'ic_popup_seen';
   var SUBSCRIBE_URL = '/api/subscribe';
+  var ORDER_URL = '/api/order';
+  var STOCK_URL = '/api/stock/';
 
   function money(n) {
     n = Math.round(n * 100) / 100;
@@ -153,6 +156,36 @@
     paint();
   }
 
+  /* ---------- Product stock cue (low-stock / sold out) ---------- */
+  function initStock() {
+    var buy = document.querySelector('[data-add-to-box]');
+    if (!buy) return; // only on pages with the add-to-box control (PDP / index)
+    var badge = document.querySelector('[data-stock-badge]');
+    fetch(STOCK_URL + PRODUCT.sku, { headers: { 'Accept': 'application/json' } })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (!data || !data.ok) return;
+        if (!data.available) {
+          if (badge) {
+            badge.textContent = 'Sold out';
+            badge.className = 'ic-stock-pill out';
+            badge.hidden = false;
+          }
+          buy.disabled = true;
+          buy.setAttribute('aria-disabled', 'true');
+          renderIcons();
+        } else if (data.low) {
+          if (badge) {
+            badge.textContent = 'Less than 5 remaining';
+            badge.className = 'ic-stock-pill low';
+            badge.hidden = false;
+          }
+        }
+        // plenty in stock → show nothing, never a number
+      })
+      .catch(function () { /* leave default UI on error */ });
+  }
+
   /* ---------- Checkout page ---------- */
   function initCheckout() {
     var page = document.querySelector('[data-checkout]');
@@ -242,24 +275,13 @@
       });
     });
 
-    /* place order → prefilled mailto (no backend) */
+    /* place order → backend POST (mailto fallback so an order is never lost) */
+    var confirmPanel = page.querySelector('[data-co-confirm]');
     var place = page.querySelector('[data-place-order]');
-    if (place) place.addEventListener('click', function () {
-      var n = getQty();
-      if (n === 0) return;
-      var name = (page.querySelector('#co-name') || {}).value || '';
-      var email = (page.querySelector('#co-email') || {}).value || '';
-      var city = (page.querySelector('#co-city') || {}).value || '';
-      var hint = page.querySelector('[data-co-hint]');
-      if (!name.trim() || !email.trim()) {
-        if (hint) {
-          hint.textContent = 'Please add your name and email above so we can confirm your order.';
-          hint.style.display = '';
-        }
-        return;
-      }
-      var t = totals();
-      var method = rail === 'crypto' ? 'Crypto (BTC / ETH / USDC)' : 'Interac e-Transfer';
+
+    function orderMailto(t, name, email, phone, city, method) {
+      var n = t.n;
+      var label = method === 'crypto' ? 'Crypto (BTC / ETH / USDC)' : 'Interac e-Transfer';
       var subject = 'Order — ' + PRODUCT.name + ' ' + PRODUCT.dose + ' × ' + n;
       var body =
         'New order — Imperial Compounds\n\n' +
@@ -269,19 +291,104 @@
         (t.coupon ? 'Coupon ' + t.coupon + ': −$' + t.disc.toFixed(2) + ' CAD\n' : '') +
         'Shipping: ' + money(SHIPPING_FLAT) + ' CAD\n' +
         'Total: ' + money(t.total) + ' CAD\n' +
-        'Payment method: ' + method + '\n\n' +
+        'Payment method: ' + label + '\n\n' +
         'Name: ' + name + '\n' +
         'Email: ' + email + '\n' +
+        'Phone: ' + (phone || '—') + '\n' +
         'City: ' + city + '\n\n' +
         'For research use only — not for human consumption.';
       window.location.href = 'mailto:' + ORDER_EMAIL +
         '?subject=' + encodeURIComponent(subject) +
         '&body=' + encodeURIComponent(body);
-      if (hint) {
-        hint.textContent = 'Your email app should have opened with the order pre-filled — just press send. ' +
-          'If nothing opened, email ' + ORDER_EMAIL + ' with your order details.';
-        hint.style.display = '';
+    }
+
+    function showConfirm(orderNumber, total, method) {
+      var title = page.querySelector('[data-confirm-title]');
+      var instr = page.querySelector('[data-confirm-instr]');
+      if (title) title.textContent = 'Order ' + orderNumber + ' received';
+      var totalStr = money(total) + ' CAD';
+      if (instr) {
+        if (method === 'crypto') {
+          instr.innerHTML = 'Your total is <b>' + totalStr + '</b>. Reply to the confirmation email and we’ll send the ' +
+            'wallet address for BTC / ETH / USDC. Include your order number <span class="mono">' + orderNumber + '</span>.';
+        } else {
+          /* TODO-CONFIRM the Interac recipient address */
+          instr.innerHTML = 'Send your Interac e-Transfer of <b>' + totalStr + '</b> to ' +
+            '<span class="mono">orders@imperialcompounds.com</span> (TODO-CONFIRM). ' +
+            'Include your order number <span class="mono">' + orderNumber + '</span>.';
+        }
       }
+      filled.style.display = 'none';
+      empty.style.display = 'none';
+      if (confirmPanel) confirmPanel.style.display = '';
+      setQty(0);
+      setCoupon(null);
+      renderIcons();
+      window.scrollTo(0, 0);
+    }
+
+    if (place) place.addEventListener('click', function () {
+      var t = totals();
+      if (t.n === 0) return;
+      var name = ((page.querySelector('#co-name') || {}).value || '').trim();
+      var email = ((page.querySelector('#co-email') || {}).value || '').trim();
+      var phone = ((page.querySelector('#co-phone') || {}).value || '').trim();
+      var city = ((page.querySelector('#co-city') || {}).value || '').trim();
+      var hint = page.querySelector('[data-co-hint]');
+      if (!name || !email) {
+        if (hint) {
+          hint.textContent = 'Please add your name and email above so we can confirm your order.';
+          hint.style.display = '';
+        }
+        return;
+      }
+      if (hint) hint.style.display = 'none';
+      var prevLabel = place.textContent;
+      place.disabled = true;
+      place.textContent = 'Placing order…';
+
+      fetch(ORDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          qty: t.n,
+          coupon: t.coupon || '',
+          name: name,
+          email: email,
+          phone: phone,
+          city: city,
+          payment_method: rail
+        })
+      }).then(function (res) {
+        if (res.status === 409) {
+          place.disabled = false;
+          place.textContent = prevLabel;
+          if (hint) {
+            hint.textContent = 'Sorry — this just sold out. We’ll restock soon.';
+            hint.style.display = '';
+          }
+          return null;
+        }
+        if (!res.ok) throw new Error('order failed');
+        return res.json();
+      }).then(function (data) {
+        if (!data) return; /* already handled (e.g. sold out) */
+        if (data.ok) {
+          showConfirm(data.order_number, data.total, data.payment_method || rail);
+        } else {
+          throw new Error('order failed');
+        }
+      }).catch(function () {
+        /* network/server error — never lose the order: fall back to mailto */
+        place.disabled = false;
+        place.textContent = prevLabel;
+        orderMailto(t, name, email, phone, city, rail);
+        if (hint) {
+          hint.textContent = 'We couldn’t reach our server, so your email app should have opened with the order ' +
+            'pre-filled — just press send. If nothing opened, email ' + ORDER_EMAIL + ' with your order details.';
+          hint.style.display = '';
+        }
+      });
     });
 
     paint();
@@ -427,6 +534,7 @@
     initDrawer();
     initAccordions();
     initProduct();
+    initStock();
     initCheckout();
     initContact();
     initPopup();

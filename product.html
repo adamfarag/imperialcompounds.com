@@ -12,6 +12,13 @@
 <link rel="stylesheet" href="styles/pages.css" />
 <script defer src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script defer src="js/site.js"></script>
+<style>
+  .ic-stock-pill { display: inline-flex; align-items: center; gap: 7px; margin-top: 12px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 6px 13px; border-radius: var(--r-pill); }
+  .ic-stock-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .ic-stock-pill.low { background: var(--gold-wash); color: var(--gold-deep); border: 1px solid rgba(201,164,76,.5); }
+  .ic-stock-pill.out { background: #FBEAEA; color: #B23A3A; border: 1px solid #E7C4C4; }
+  .ic-btn[disabled] { opacity: .55; cursor: not-allowed; filter: grayscale(.2); }
+</style>
 </head>
 <body>
 <div class="ic-app">
@@ -88,6 +95,7 @@
       <div class="eye">GLP-1 / GIP / Glucagon research</div>
       <h1>Retatrutide</h1>
       <div class="ic-pdp-dose">15 mg · lyophilized powder · single vial</div>
+      <span class="ic-stock-pill" data-stock-badge hidden></span>
       <p class="ic-pdp-blurb">GLP-1 / GIP / glucagon triple agonist for metabolic research. Lyophilized powder in a sealed glass vial.</p>
 
       <div class="ic-pdp-specs">

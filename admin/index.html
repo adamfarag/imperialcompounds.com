@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Admin — Imperial Compounds</title>
+<link rel="icon" type="image/png" href="../assets/brand/crest.png" />
+<link rel="stylesheet" href="../styles/colors_and_type.css" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--fg); font-family: var(--font-sans); line-height: 1.5; }
+  a { color: inherit; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 18px; width: 100%; }
+
+  /* ---- top bar ---- */
+  .bar { background: var(--navy); color: #fff; border-bottom: 1px solid var(--line-on-navy); position: sticky; top: 0; z-index: 20; }
+  .bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; flex-wrap: wrap; }
+  .bar .brand { font-family: var(--font-display); font-weight: 600; letter-spacing: .12em; font-size: 16px; }
+  .bar .brand small { display: block; font-family: var(--font-sans); font-weight: 500; letter-spacing: .34em; font-size: 9px; color: var(--gold-light); margin-top: 3px; }
+  .bar .tools { display: flex; align-items: center; gap: 10px; }
+  .bar .muted { color: var(--fg-on-navy-2); font-size: 12px; }
+
+  .btn { font-family: var(--font-sans); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border: none; border-radius: var(--r-sm); cursor: pointer; padding: 9px 16px; font-size: 11.5px; display: inline-flex; align-items: center; gap: 7px; transition: filter .15s, background .15s; }
+  .btn-gold { background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #2a2208; }
+  .btn-gold:hover { filter: brightness(1.05); }
+  .btn-ghost { background: transparent; border: 1px solid rgba(201,164,76,.5); color: var(--gold-light); }
+  .btn-ghost:hover { background: rgba(201,164,76,.12); }
+  .btn-sm { padding: 6px 11px; font-size: 10.5px; }
+
+  main { padding: 26px 0 80px; }
+  section { margin-bottom: 34px; }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 26px; color: var(--navy); margin: 0 0 4px; }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-deep); font-weight: 600; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+  .sec-head .count { font-size: 12.5px; color: var(--fg-muted); }
+
+  /* ---- stat cards ---- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin-bottom: 30px; }
+  .stat { background: linear-gradient(150deg, var(--navy), var(--navy-2)); color: #fff; border: 1px solid var(--line-on-navy); border-radius: var(--r-md); padding: 18px 20px; }
+  .stat .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--gold-light); font-weight: 600; }
+  .stat .v { font-family: var(--font-display); font-weight: 600; font-size: 30px; margin-top: 6px; }
+
+  /* ---- tables ---- */
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--sh-sm); overflow: hidden; }
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  thead th { text-align: left; background: var(--paper-2); color: var(--fg-2); font-weight: 600; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #FBFAF6; }
+  .mono { font-family: var(--font-mono); font-size: 12.5px; }
+  .sub { color: var(--fg-muted); font-size: 11.5px; }
+  .nowrap { white-space: nowrap; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .pill { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 3px 9px; border-radius: var(--r-pill); }
+  .pill.pending { background: var(--warning-bg); color: var(--warning); }
+  .pill.paid { background: #E7F1EC; color: var(--success); }
+  .pill.shipped { background: #E4ECF8; color: var(--info); }
+  .pill.cancelled { background: #F0EDED; color: #8a6d6d; }
+  .pm { font-size: 11.5px; color: var(--fg-2); text-transform: capitalize; }
+
+  select, input.stock { font-family: var(--font-sans); font-size: 12.5px; color: var(--navy); background: var(--paper); border: 1px solid var(--line-strong); border-radius: var(--r-sm); padding: 7px 9px; outline: none; }
+  select:focus, input.stock:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,.16); background: #fff; }
+  input.stock { width: 84px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  .inv-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+  .inv-row:last-child { border-bottom: none; }
+  .inv-row .nm { font-weight: 600; color: var(--navy); }
+  .inv-row .sku { font-family: var(--font-mono); font-size: 11.5px; color: var(--fg-muted); }
+  .inv-row.low { background: #FBF3DF55; }
+  .inv-row .lowtag { font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--warning); }
+  .inv-spacer { flex: 1; }
+
+  .empty { padding: 26px 16px; text-align: center; color: var(--fg-muted); font-size: 13px; }
+  .err { color: #B23A3A; font-size: 12.5px; margin-top: 8px; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--navy); color: #fff; padding: 11px 20px; border-radius: var(--r-pill); font-size: 13px; box-shadow: var(--sh-md); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 50; }
+  .toast.show { opacity: 1; }
+
+  /* ---- gate ---- */
+  .gate { position: fixed; inset: 0; background: linear-gradient(160deg, var(--navy-deep), var(--navy)); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .gate-card { background: #fff; border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: 34px 32px; width: 100%; max-width: 360px; text-align: center; }
+  .gate-card .eyebrow { margin-bottom: 6px; }
+  .gate-card h1 { font-family: var(--font-display); font-weight: 600; font-size: 24px; color: var(--navy); margin: 0 0 18px; }
+  .gate-card input { width: 100%; font-family: var(--font-mono); font-size: 14px; padding: 12px 13px; border: 1px solid var(--line-strong); border-radius: var(--r-sm); outline: none; margin-bottom: 12px; }
+  .gate-card input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,164,76,.16); }
+  .gate-card .btn { width: 100%; justify-content: center; }
+
+  @media (max-width: 640px) {
+    .stat .v { font-size: 24px; }
+    h2 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Admin key gate -->
+<div class="gate" data-gate hidden>
+  <div class="gate-card">
+    <div class="eyebrow">Imperial Compounds</div>
+    <h1>Admin access</h1>
+    <input type="password" data-gate-input placeholder="Admin key" autocomplete="off" />
+    <button class="btn btn-gold" data-gate-go>Enter</button>
+    <p class="err" data-gate-err hidden>Invalid key — try again.</p>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="brand">IMPERIAL COMPOUNDS<small>ADMIN</small></div>
+    <div class="tools">
+      <span class="muted" data-updated></span>
+      <button class="btn btn-ghost" data-refresh>Refresh</button>
+      <button class="btn btn-ghost" data-logout>Sign out</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" data-app hidden>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="k">Total orders</div><div class="v num" data-stat-orders>—</div></div>
+    <div class="stat"><div class="k">Revenue (paid+shipped)</div><div class="v num" data-stat-revenue>—</div></div>
+    <div class="stat"><div class="k">Pending</div><div class="v num" data-stat-pending>—</div></div>
+    <div class="stat"><div class="k">Subscribers</div><div class="v num" data-stat-subs>—</div></div>
+  </div>
+
+  <!-- Orders -->
+  <section>
+    <div class="sec-head">
+      <div><div class="eyebrow">Sales</div><h2>Orders</h2></div>
+      <span class="count" data-orders-count></span>
+    </div>
+    <div class="card">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Order #</th><th>Date</th><th>Customer</th><th>Qty</th>
+              <th>Total</th><th>Payment</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody data-orders-body></tbody>
+        </table>
+      </div>
+      <div class="empty" data-orders-empty hidden>No orders yet.</div>
+    </div>
+  </section>
+
+  <!-- Inventory -->
+  <section>
+    <div class="sec-head">
+      <div><div class="eyebrow">Stock</div><h2>Inventory</h2></div>
+    </div>
+    <div class="card" data-inv-body></div>
+  </section>
+
+  <!-- Subscribers -->
+  <section>
+    <div class="sec-head">
+      <div><div class="eyebrow">Marketing list</div><h2>Subscribers</h2></div>
+      <div class="tools">
+        <button class="btn btn-ghost btn-sm" data-copy-phones style="color:var(--gold-deep);border-color:var(--line-strong)">Copy all phones</button>
+        <button class="btn btn-ghost btn-sm" data-copy-emails style="color:var(--gold-deep);border-color:var(--line-strong)">Copy all emails</button>
+        <span class="count" data-subs-count></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Phone</th><th>Email</th><th>Source</th><th>Status</th><th>Signed up</th></tr>
+          </thead>
+          <tbody data-subs-body></tbody>
+        </table>
+      </div>
+      <div class="empty" data-subs-empty hidden>No subscribers yet.</div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" data-toast></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY_LS = 'ic_admin_key';
+  var SUMMARY_URL = '/api/admin/summary';
+  var STATUS_URL = '/api/admin/order-status';
+  var STOCK_URL = '/api/admin/stock';
+  var STATUSES = ['pending', 'paid', 'shipped', 'cancelled'];
+
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var gate = $('[data-gate]');
+  var app = $('[data-app]');
+  var lastSubs = [];
+  var refreshTimer = null;
+
+  function getKey() { return localStorage.getItem(KEY_LS) || ''; }
+  function setKey(k) { localStorage.setItem(KEY_LS, k); }
+  function clearKey() { localStorage.removeItem(KEY_LS); }
+
+  function showToast(msg) {
+    var t = $('[data-toast]');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  function showGate(withErr) {
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    app.hidden = true;
+    gate.hidden = false;
+    $('[data-gate-err]').hidden = !withErr;
+    var input = $('[data-gate-input]');
+    input.value = '';
+    input.focus();
+  }
+  function showApp() {
+    gate.hidden = true;
+    app.hidden = false;
+    if (!refreshTimer) refreshTimer = setInterval(function () { load(true); }, 30000);
+  }
+
+  function api(url, opts) {
+    opts = opts || {};
+    opts.headers = opts.headers || {};
+    opts.headers['X-Admin-Key'] = getKey();
+    return fetch(url, opts).then(function (res) {
+      if (res.status === 401) { clearKey(); showGate(true); throw new Error('unauthorized'); }
+      if (!res.ok) throw new Error('request failed (' + res.status + ')');
+      return res.json();
+    });
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function money(n) {
+    n = Math.round((Number(n) || 0) * 100) / 100;
+    return '$' + (n % 1 === 0 ? String(n) : n.toFixed(2));
+  }
+  function fmtDate(s) {
+    if (!s) return '—';
+    var d = new Date(s);
+    if (isNaN(d)) return esc(s);
+    return d.toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function renderStats(data) {
+    var orders = data.orders || [];
+    var revenue = orders.reduce(function (sum, o) {
+      return (o.status === 'paid' || o.status === 'shipped') ? sum + (Number(o.total) || 0) : sum;
+    }, 0);
+    var pending = orders.filter(function (o) { return o.status === 'pending'; }).length;
+    $('[data-stat-orders]').textContent = (data.counts && data.counts.orders != null) ? data.counts.orders : orders.length;
+    $('[data-stat-revenue]').textContent = money(revenue);
+    $('[data-stat-pending]').textContent = pending;
+    $('[data-stat-subs]').textContent = (data.counts && data.counts.subscribers != null) ? data.counts.subscribers : (data.subscribers || []).length;
+  }
+
+  function renderOrders(orders) {
+    var body = $('[data-orders-body]');
+    $('[data-orders-count]').textContent = orders.length + ' shown';
+    $('[data-orders-empty]').hidden = orders.length > 0;
+    body.innerHTML = orders.map(function (o) {
+      var c = o.customer || {};
+      var opts = STATUSES.map(function (s) {
+        return '<option value="' + s + '"' + (s === o.status ? ' selected' : '') + '>' + s + '</option>';
+      }).join('');
+      var cust =
+        '<div><b>' + esc(c.name || '—') + '</b></div>' +
+        '<div class="sub">' + esc(c.email || '') + '</div>' +
+        (c.phone ? '<div class="sub">' + esc(c.phone) + '</div>' : '') +
+        (c.city ? '<div class="sub">' + esc(c.city) + '</div>' : '');
+      return '<tr>' +
+        '<td class="mono nowrap">' + esc(o.order_number) + '</td>' +
+        '<td class="sub nowrap">' + fmtDate(o.created_at) + '</td>' +
+        '<td>' + cust + '</td>' +
+        '<td class="num">' + esc(o.qty) + '</td>' +
+        '<td class="num nowrap">' + money(o.total) + ' <span class="sub">CAD</span>' +
+          (o.discount ? '<div class="sub">' + esc(o.coupon || 'coupon') + ' −' + money(o.discount) + '</div>' : '') + '</td>' +
+        '<td class="pm">' + esc(o.payment_method || '—') + '</td>' +
+        '<td class="nowrap"><span class="pill ' + esc(o.status) + '">' + esc(o.status) + '</span><br>' +
+          '<select data-set-status="' + esc(o.order_number) + '" style="margin-top:7px">' + opts + '</select></td>' +
+        '</tr>';
+    }).join('');
+    body.querySelectorAll('[data-set-status]').forEach(function (sel) {
+      sel.addEventListener('change', function () {
+        setStatus(sel.getAttribute('data-set-status'), sel.value);
+      });
+    });
+  }
+
+  function renderInventory(inv) {
+    var box = $('[data-inv-body]');
+    if (!inv.length) { box.innerHTML = '<div class="empty">No inventory records.</div>'; return; }
+    box.innerHTML = inv.map(function (it) {
+      var low = Number(it.stock) <= 5;
+      return '<div class="inv-row' + (low ? ' low' : '') + '">' +
+        '<div><div class="nm">' + esc(it.name || it.sku) + '</div><div class="sku">' + esc(it.sku) + '</div></div>' +
+        (low ? '<span class="lowtag">Low</span>' : '') +
+        '<div class="inv-spacer"></div>' +
+        '<input class="stock" type="number" min="0" step="1" value="' + esc(it.stock) + '" data-stock-input="' + esc(it.sku) + '" />' +
+        '<button class="btn btn-gold btn-sm" data-stock-save="' + esc(it.sku) + '">Save</button>' +
+        '</div>';
+    }).join('');
+    box.querySelectorAll('[data-stock-save]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var sku = btn.getAttribute('data-stock-save');
+        var input = box.querySelector('[data-stock-input="' + sku + '"]');
+        saveStock(sku, input.value);
+      });
+    });
+  }
+
+  function renderSubscribers(subs) {
+    lastSubs = subs;
+    var body = $('[data-subs-body]');
+    $('[data-subs-count]').textContent = subs.length + ' shown';
+    $('[data-subs-empty]').hidden = subs.length > 0;
+    body.innerHTML = subs.map(function (s) {
+      return '<tr>' +
+        '<td class="mono nowrap">' + esc(s.phone || '—') + '</td>' +
+        '<td>' + esc(s.email || '—') + '</td>' +
+        '<td class="sub">' + esc(s.source || '—') + '</td>' +
+        '<td class="nowrap"><span class="pill ' + (s.status === 'active' ? 'paid' : 'cancelled') + '">' + esc(s.status || '—') + '</span></td>' +
+        '<td class="sub nowrap">' + fmtDate(s.created_at) + '</td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function setStatus(orderNumber, status) {
+    api(STATUS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_number: orderNumber, status: status })
+    }).then(function () {
+      showToast(orderNumber + ' → ' + status);
+      load(true);
+    }).catch(function (e) { if (e.message !== 'unauthorized') showToast('Could not update status'); });
+  }
+
+  function saveStock(sku, value) {
+    var n = parseInt(value, 10);
+    if (isNaN(n) || n < 0) { showToast('Enter a valid stock number'); return; }
+    api(STOCK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku: sku, stock: n })
+    }).then(function () {
+      showToast(sku + ' stock set to ' + n);
+      load(true);
+    }).catch(function (e) { if (e.message !== 'unauthorized') showToast('Could not save stock'); });
+  }
+
+  function copyList(field) {
+    var vals = lastSubs.map(function (s) { return (s[field] || '').trim(); }).filter(Boolean);
+    // de-dupe while preserving order
+    var seen = {}, out = [];
+    vals.forEach(function (v) { if (!seen[v]) { seen[v] = 1; out.push(v); } });
+    var text = out.join(', ');
+    if (!text) { showToast('No ' + field + 's to copy'); return; }
+    var done = function () { showToast('Copied ' + out.length + ' ' + field + (out.length === 1 ? '' : 's')); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else { fallbackCopy(text, done); }
+  }
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { showToast('Copy failed'); }
+    document.body.removeChild(ta);
+  }
+
+  function load(silent) {
+    return api(SUMMARY_URL).then(function (data) {
+      if (!data || !data.ok) throw new Error('bad data');
+      showApp();
+      renderStats(data);
+      renderOrders(data.orders || []);
+      renderInventory(data.inventory || []);
+      renderSubscribers(data.subscribers || []);
+      $('[data-updated]').textContent = 'Updated ' + new Date().toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' });
+    }).catch(function (e) {
+      if (e.message === 'unauthorized') return; // gate already shown
+      if (!silent) showToast('Could not load — check connection');
+    });
+  }
+
+  // ---- gate wiring ----
+  function submitGate() {
+    var v = $('[data-gate-input]').value.trim();
+    if (!v) return;
+    setKey(v);
+    load(false).then(function () { /* showApp handled in load */ });
+  }
+  $('[data-gate-go]').addEventListener('click', submitGate);
+  $('[data-gate-input]').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitGate(); });
+  $('[data-refresh]').addEventListener('click', function () { load(false); });
+  $('[data-logout]').addEventListener('click', function () { clearKey(); showGate(false); });
+  $('[data-copy-phones]').addEventListener('click', function () { copyList('phone'); });
+  $('[data-copy-emails]').addEventListener('click', function () { copyList('email'); });
+
+  // ---- boot ----
+  if (getKey()) { load(false); } else { showGate(false); }
+})();
+</script>
+</body>
+</html>
