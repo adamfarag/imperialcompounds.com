@@ -57,7 +57,7 @@
     radial-gradient(ellipse at 50% 47%, rgba(233,207,142,.34), transparent 56%),
     radial-gradient(ellipse at 50% 8%, rgba(201,164,76,.14), transparent 55%);
 }
-.ic-hero-split .plinth img { height: 84%; max-width: 84%; object-fit: contain; mix-blend-mode: multiply; position: relative; z-index: 1; }
+.ic-hero-split .plinth img { height: 98%; max-width: 96%; object-fit: contain; mix-blend-mode: multiply; position: relative; z-index: 1; }
 .ic-hero-split .plinth .vchip {
   position: absolute; bottom: 16px; left: 16px; z-index: 2;
   display: inline-flex; align-items: center; gap: 7px;
@@ -349,10 +349,10 @@
 
   /* vial sits in a full-width landscape light shelf */
   .ic-hero-split .plinth {
-    max-width: none; width: 100%; aspect-ratio: auto; height: 200px;
+    max-width: none; width: 100%; aspect-ratio: auto; height: 250px;
     margin-bottom: 22px; justify-self: stretch;
   }
-  .ic-hero-split .plinth img { height: 84%; max-width: 70%; }
+  .ic-hero-split .plinth img { height: 94%; max-width: 80%; }
   .ic-hero-split .vchip { bottom: 12px; left: 12px; padding: 5px 10px; font-size: 11px; }
 
   /* stats → even 3-up grid, centered */
