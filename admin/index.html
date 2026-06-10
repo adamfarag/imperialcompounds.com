@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="robots" content="noindex, nofollow" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'" />
 <title>Admin — Imperial Compounds</title>
 <link rel="icon" type="image/png" href="../assets/brand/crest.png" />
 <link rel="stylesheet" href="../styles/colors_and_type.css" />
@@ -95,14 +96,15 @@
 </head>
 <body>
 
-<!-- Admin key gate -->
+<!-- Admin login gate (key + 2FA) -->
 <div class="gate" data-gate hidden>
   <div class="gate-card">
     <div class="eyebrow">Imperial Compounds</div>
     <h1>Admin access</h1>
-    <input type="password" data-gate-input placeholder="Admin key" autocomplete="off" />
+    <input type="password" data-gate-key placeholder="Admin key" autocomplete="off" />
+    <input type="text" data-gate-otp placeholder="6-digit code" autocomplete="one-time-code" inputmode="numeric" maxlength="6" />
     <button class="btn btn-gold" data-gate-go>Enter</button>
-    <p class="err" data-gate-err hidden>Invalid key — try again.</p>
+    <p class="err" data-gate-err hidden>Invalid credentials — try again.</p>
   </div>
 </div>
 
@@ -187,7 +189,8 @@
 <script>
 (function () {
   'use strict';
-  var KEY_LS = 'ic_admin_key';
+  var SESSION_LS = 'ic_admin_session';
+  var LOGIN_URL = '/api/admin/login';
   var SUMMARY_URL = '/api/admin/summary';
   var STATUS_URL = '/api/admin/order-status';
   var STOCK_URL = '/api/admin/stock';
@@ -199,9 +202,19 @@
   var lastSubs = [];
   var refreshTimer = null;
 
-  function getKey() { return localStorage.getItem(KEY_LS) || ''; }
-  function setKey(k) { localStorage.setItem(KEY_LS, k); }
-  function clearKey() { localStorage.removeItem(KEY_LS); }
+  // Only a signed session token is ever stored client-side — never the raw admin key.
+  function getSession() { return localStorage.getItem(SESSION_LS) || ''; }
+  function setSession(t) { localStorage.setItem(SESSION_LS, t); }
+  function clearSession() { localStorage.removeItem(SESSION_LS); }
+
+  // DOM builder: text is always set via textContent, so untrusted values can never
+  // be interpreted as HTML (XSS-safe by construction).
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = String(text);
+    return n;
+  }
 
   function showToast(msg) {
     var t = $('[data-toast]');
@@ -211,14 +224,15 @@
     t._timer = setTimeout(function () { t.classList.remove('show'); }, 2400);
   }
 
-  function showGate(withErr) {
+  function showGate(msg) {
     if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
     app.hidden = true;
     gate.hidden = false;
-    $('[data-gate-err]').hidden = !withErr;
-    var input = $('[data-gate-input]');
-    input.value = '';
-    input.focus();
+    var err = $('[data-gate-err]');
+    if (msg) { err.textContent = msg; err.hidden = false; } else { err.hidden = true; }
+    $('[data-gate-key]').value = '';
+    $('[data-gate-otp]').value = '';
+    $('[data-gate-key]').focus();
   }
   function showApp() {
     gate.hidden = true;
@@ -229,19 +243,14 @@
   function api(url, opts) {
     opts = opts || {};
     opts.headers = opts.headers || {};
-    opts.headers['X-Admin-Key'] = getKey();
+    opts.headers['X-Admin-Session'] = getSession();
     return fetch(url, opts).then(function (res) {
-      if (res.status === 401) { clearKey(); showGate(true); throw new Error('unauthorized'); }
+      if (res.status === 401) { clearSession(); showGate('Session expired — log in again.'); throw new Error('unauthorized'); }
       if (!res.ok) throw new Error('request failed (' + res.status + ')');
       return res.json();
     });
   }
 
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
   function money(n) {
     n = Math.round((Number(n) || 0) * 100) / 100;
     return '$' + (n % 1 === 0 ? String(n) : n.toFixed(2));
@@ -249,9 +258,10 @@
   function fmtDate(s) {
     if (!s) return '—';
     var d = new Date(s);
-    if (isNaN(d)) return esc(s);
+    if (isNaN(d)) return String(s);
     return d.toLocaleString('en-CA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
+  function statusClass(st) { return STATUSES.indexOf(st) >= 0 ? st : ''; }
 
   function renderStats(data) {
     var orders = data.orders || [];
@@ -269,54 +279,83 @@
     var body = $('[data-orders-body]');
     $('[data-orders-count]').textContent = orders.length + ' shown';
     $('[data-orders-empty]').hidden = orders.length > 0;
-    body.innerHTML = orders.map(function (o) {
+    body.textContent = '';
+    orders.forEach(function (o) {
       var c = o.customer || {};
-      var opts = STATUSES.map(function (s) {
-        return '<option value="' + s + '"' + (s === o.status ? ' selected' : '') + '>' + s + '</option>';
-      }).join('');
-      var cust =
-        '<div><b>' + esc(c.name || '—') + '</b></div>' +
-        '<div class="sub">' + esc(c.email || '') + '</div>' +
-        (c.phone ? '<div class="sub">' + esc(c.phone) + '</div>' : '') +
-        (c.city ? '<div class="sub">' + esc(c.city) + '</div>' : '');
-      return '<tr>' +
-        '<td class="mono nowrap">' + esc(o.order_number) + '</td>' +
-        '<td class="sub nowrap">' + fmtDate(o.created_at) + '</td>' +
-        '<td>' + cust + '</td>' +
-        '<td class="num">' + esc(o.qty) + '</td>' +
-        '<td class="num nowrap">' + money(o.total) + ' <span class="sub">CAD</span>' +
-          (o.discount ? '<div class="sub">' + esc(o.coupon || 'coupon') + ' −' + money(o.discount) + '</div>' : '') + '</td>' +
-        '<td class="pm">' + esc(o.payment_method || '—') + '</td>' +
-        '<td class="nowrap"><span class="pill ' + esc(o.status) + '">' + esc(o.status) + '</span><br>' +
-          '<select data-set-status="' + esc(o.order_number) + '" style="margin-top:7px">' + opts + '</select></td>' +
-        '</tr>';
-    }).join('');
-    body.querySelectorAll('[data-set-status]').forEach(function (sel) {
-      sel.addEventListener('change', function () {
-        setStatus(sel.getAttribute('data-set-status'), sel.value);
+      var tr = document.createElement('tr');
+
+      tr.appendChild(el('td', 'mono nowrap', o.order_number));
+      tr.appendChild(el('td', 'sub nowrap', fmtDate(o.created_at)));
+
+      // Customer — every field is untrusted public input → textContent only.
+      var tdCust = document.createElement('td');
+      var nameDiv = document.createElement('div');
+      var nameB = document.createElement('b');
+      nameB.textContent = c.name || '—';
+      nameDiv.appendChild(nameB);
+      tdCust.appendChild(nameDiv);
+      if (c.email) tdCust.appendChild(el('div', 'sub', c.email));
+      if (c.phone) tdCust.appendChild(el('div', 'sub', c.phone));
+      if (c.city) tdCust.appendChild(el('div', 'sub', c.city));
+      tr.appendChild(tdCust);
+
+      tr.appendChild(el('td', 'num', o.qty));
+
+      var tdTotal = el('td', 'num nowrap', money(o.total) + ' ');
+      tdTotal.appendChild(el('span', 'sub', 'CAD'));
+      if (o.discount) {
+        tdTotal.appendChild(el('div', 'sub', (o.coupon || 'coupon') + ' −' + money(o.discount)));
+      }
+      tr.appendChild(tdTotal);
+
+      tr.appendChild(el('td', 'pm', o.payment_method || '—'));
+
+      var tdStatus = document.createElement('td');
+      tdStatus.className = 'nowrap';
+      tdStatus.appendChild(el('span', 'pill ' + statusClass(o.status), o.status || '—'));
+      tdStatus.appendChild(document.createElement('br'));
+      var sel = document.createElement('select');
+      sel.style.marginTop = '7px';
+      STATUSES.forEach(function (s) {
+        var opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        if (s === o.status) opt.selected = true;
+        sel.appendChild(opt);
       });
+      sel.addEventListener('change', function () { setStatus(o.order_number, sel.value); });
+      tdStatus.appendChild(sel);
+      tr.appendChild(tdStatus);
+
+      body.appendChild(tr);
     });
   }
 
   function renderInventory(inv) {
     var box = $('[data-inv-body]');
-    if (!inv.length) { box.innerHTML = '<div class="empty">No inventory records.</div>'; return; }
-    box.innerHTML = inv.map(function (it) {
+    box.textContent = '';
+    if (!inv.length) { box.appendChild(el('div', 'empty', 'No inventory records.')); return; }
+    inv.forEach(function (it) {
       var low = Number(it.stock) <= 5;
-      return '<div class="inv-row' + (low ? ' low' : '') + '">' +
-        '<div><div class="nm">' + esc(it.name || it.sku) + '</div><div class="sku">' + esc(it.sku) + '</div></div>' +
-        (low ? '<span class="lowtag">Low</span>' : '') +
-        '<div class="inv-spacer"></div>' +
-        '<input class="stock" type="number" min="0" step="1" value="' + esc(it.stock) + '" data-stock-input="' + esc(it.sku) + '" />' +
-        '<button class="btn btn-gold btn-sm" data-stock-save="' + esc(it.sku) + '">Save</button>' +
-        '</div>';
-    }).join('');
-    box.querySelectorAll('[data-stock-save]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var sku = btn.getAttribute('data-stock-save');
-        var input = box.querySelector('[data-stock-input="' + sku + '"]');
-        saveStock(sku, input.value);
-      });
+      var row = document.createElement('div');
+      row.className = 'inv-row' + (low ? ' low' : '');
+      var info = document.createElement('div');
+      info.appendChild(el('div', 'nm', it.name || it.sku));
+      info.appendChild(el('div', 'sku', it.sku));
+      row.appendChild(info);
+      if (low) row.appendChild(el('span', 'lowtag', 'Low'));
+      row.appendChild(el('div', 'inv-spacer'));
+      var input = document.createElement('input');
+      input.className = 'stock';
+      input.type = 'number';
+      input.min = '0';
+      input.step = '1';
+      input.value = it.stock;
+      row.appendChild(input);
+      var btn = el('button', 'btn btn-gold btn-sm', 'Save');
+      btn.addEventListener('click', function () { saveStock(it.sku, input.value); });
+      row.appendChild(btn);
+      box.appendChild(row);
     });
   }
 
@@ -325,15 +364,19 @@
     var body = $('[data-subs-body]');
     $('[data-subs-count]').textContent = subs.length + ' shown';
     $('[data-subs-empty]').hidden = subs.length > 0;
-    body.innerHTML = subs.map(function (s) {
-      return '<tr>' +
-        '<td class="mono nowrap">' + esc(s.phone || '—') + '</td>' +
-        '<td>' + esc(s.email || '—') + '</td>' +
-        '<td class="sub">' + esc(s.source || '—') + '</td>' +
-        '<td class="nowrap"><span class="pill ' + (s.status === 'active' ? 'paid' : 'cancelled') + '">' + esc(s.status || '—') + '</span></td>' +
-        '<td class="sub nowrap">' + fmtDate(s.created_at) + '</td>' +
-        '</tr>';
-    }).join('');
+    body.textContent = '';
+    subs.forEach(function (s) {
+      var tr = document.createElement('tr');
+      tr.appendChild(el('td', 'mono nowrap', s.phone || '—'));
+      tr.appendChild(el('td', null, s.email || '—'));
+      tr.appendChild(el('td', 'sub', s.source || '—'));
+      var tdStatus = document.createElement('td');
+      tdStatus.className = 'nowrap';
+      tdStatus.appendChild(el('span', 'pill ' + (s.status === 'active' ? 'paid' : 'cancelled'), s.status || '—'));
+      tr.appendChild(tdStatus);
+      tr.appendChild(el('td', 'sub nowrap', fmtDate(s.created_at)));
+      body.appendChild(tr);
+    });
   }
 
   function setStatus(orderNumber, status) {
@@ -397,20 +440,37 @@
 
   // ---- gate wiring ----
   function submitGate() {
-    var v = $('[data-gate-input]').value.trim();
-    if (!v) return;
-    setKey(v);
-    load(false).then(function () { /* showApp handled in load */ });
+    var key = $('[data-gate-key]').value.trim();
+    var otp = $('[data-gate-otp]').value.trim();
+    if (!key || !otp) return;
+    fetch(LOGIN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: key, otp: otp })
+    }).then(function (res) {
+      return res.json().then(function (d) { return { ok: res.ok, data: d }; }, function () { return { ok: res.ok, data: null }; });
+    }).then(function (r) {
+      if (r.ok && r.data && r.data.ok && r.data.session) {
+        setSession(r.data.session);
+        load(false);
+      } else {
+        clearSession();
+        showGate('Invalid credentials — try again.');
+      }
+    }).catch(function () {
+      showGate('Could not reach server — try again.');
+    });
   }
   $('[data-gate-go]').addEventListener('click', submitGate);
-  $('[data-gate-input]').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitGate(); });
+  $('[data-gate-key]').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitGate(); });
+  $('[data-gate-otp]').addEventListener('keydown', function (e) { if (e.key === 'Enter') submitGate(); });
   $('[data-refresh]').addEventListener('click', function () { load(false); });
-  $('[data-logout]').addEventListener('click', function () { clearKey(); showGate(false); });
+  $('[data-logout]').addEventListener('click', function () { clearSession(); showGate(false); });
   $('[data-copy-phones]').addEventListener('click', function () { copyList('phone'); });
   $('[data-copy-emails]').addEventListener('click', function () { copyList('email'); });
 
   // ---- boot ----
-  if (getKey()) { load(false); } else { showGate(false); }
+  if (getSession()) { load(false); } else { showGate(false); }
 })();
 </script>
 </body>
