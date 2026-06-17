@@ -1,26 +1,45 @@
 /* =========================================================
    Imperial Compounds — site.js (vanilla, no build step)
-   Cart (localStorage, single SKU), header count, mobile
-   drawer, accordions, steppers, mailto order composer,
-   email-capture popup + signup band, checkout coupon.
+   Multi-SKU catalog, multi-line cart (localStorage), header
+   count, mobile drawer, accordions, steppers, templated PDP,
+   multi-line checkout, mailto fallback, email-capture popup,
+   checkout coupon.
    ========================================================= */
 (function () {
   'use strict';
 
-  /* ---------- Catalog: exactly one SKU ---------- */
-  var PRODUCT = {
-    id: 'retatrutide-15',
-    sku: 'reta-15mg', // backend inventory/order SKU
-    name: 'Retatrutide',
-    dose: '15 mg',
-    desc: '15 mg · lyophilized powder · single vial',
-    price: 100, // CAD per vial
-    img: 'assets/products/retatrutide_15mg.png',
-    url: 'product.html'
+  /* ---------- Catalog (must mirror the backend PRODUCTS map) ---------- */
+  var PRODUCTS = {
+    'reta-10mg': {
+      id: 'retatrutide-10',
+      sku: 'reta-10mg',
+      name: 'Retatrutide',
+      dose: '10 mg',
+      eye: 'GLP-1 / GIP / Glucagon research',
+      desc: 'Lyophilized powder · single vial',
+      blurb: 'GLP-1 / GIP / glucagon triple agonist for metabolic research. Lyophilized powder in a sealed glass vial.',
+      price: 89.99,
+      img: 'assets/products/retatrutide_10mg.png'
+    },
+    'ghk-cu-100mg': {
+      id: 'ghk-cu-100',
+      sku: 'ghk-cu-100mg',
+      name: 'GHK-Cu',
+      dose: '100 mg',
+      eye: 'Copper peptide · cosmetic research',
+      desc: 'Lyophilized powder · single vial',
+      blurb: 'Copper tripeptide-1 (GHK-Cu) for skin, repair and regeneration research. Lyophilized powder in a sealed glass vial.',
+      price: 79.99,
+      img: 'assets/products/ghk-cu_100mg.png'
+    }
   };
+  /* Order products appear in the catalog + as the PDP default. */
+  var CATALOG = ['reta-10mg', 'ghk-cu-100mg'];
+
   var ORDER_EMAIL = 'orders@imperialcompounds.com'; /* TODO-CONFIRM-EMAIL */
   var SHIPPING_FLAT = 18; /* TODO-CONFIRM flat shipping rate */
-  var CART_KEY = 'ic_cart_qty';
+  var CART_KEY = 'ic_cart_v2'; /* JSON map { sku: qty } */
+  var OLD_CART_KEY = 'ic_cart_qty'; /* legacy single-SKU qty — discarded */
   var COUPON_KEY = 'ic_coupon';
   var COUPON_CODE = 'IMPERIAL10';
   var COUPON_RATE = 0.10; /* 10% off product subtotal, not shipping */
@@ -33,6 +52,7 @@
     n = Math.round(n * 100) / 100;
     return '$' + (n % 1 === 0 ? String(n) : n.toFixed(2));
   }
+  function product(sku) { return PRODUCTS[sku] || null; }
 
   /* ---------- Icons (lucide CDN) ---------- */
   function renderIcons() {
@@ -41,20 +61,50 @@
     }
   }
 
-  /* ---------- Cart ---------- */
-  function getQty() {
-    var n = parseInt(localStorage.getItem(CART_KEY), 10);
-    return isNaN(n) || n < 0 ? 0 : n;
+  /* ---------- Cart (multi-line: { sku: qty }) ---------- */
+  function getCart() {
+    var raw = localStorage.getItem(CART_KEY);
+    var c = {};
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        Object.keys(parsed).forEach(function (sku) {
+          var q = parseInt(parsed[sku], 10);
+          if (PRODUCTS[sku] && q > 0) c[sku] = Math.min(99, q);
+        });
+      } catch (e) { c = {}; }
+    }
+    return c;
   }
-  function setQty(n) {
-    n = Math.max(0, Math.floor(n || 0));
-    if (n === 0) localStorage.removeItem(CART_KEY);
-    else localStorage.setItem(CART_KEY, String(n));
+  function saveCart(c) {
+    var clean = {};
+    Object.keys(c).forEach(function (sku) {
+      if (PRODUCTS[sku] && c[sku] > 0) clean[sku] = Math.min(99, Math.floor(c[sku]));
+    });
+    if (Object.keys(clean).length) localStorage.setItem(CART_KEY, JSON.stringify(clean));
+    else localStorage.removeItem(CART_KEY);
     updateCartCount();
+    return clean;
+  }
+  function addToCart(sku, qty) {
+    if (!PRODUCTS[sku]) return;
+    var c = getCart();
+    c[sku] = Math.min(99, (c[sku] || 0) + Math.max(1, qty || 1));
+    saveCart(c);
+  }
+  function setLine(sku, qty) {
+    var c = getCart();
+    if (qty <= 0) delete c[sku];
+    else c[sku] = Math.min(99, qty);
+    saveCart(c);
+  }
+  function cartCount() {
+    var c = getCart(), n = 0;
+    Object.keys(c).forEach(function (sku) { n += c[sku]; });
     return n;
   }
   function updateCartCount() {
-    var n = getQty();
+    var n = cartCount();
     document.querySelectorAll('[data-cart-count]').forEach(function (el) {
       el.textContent = '(' + n + ')';
     });
@@ -97,7 +147,7 @@
     toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2800);
   }
 
-  /* ---------- Mobile drawer (display toggle + opacity/right — no transform) ---------- */
+  /* ---------- Mobile drawer ---------- */
   function initDrawer() {
     var burger = document.querySelector('.ic-burger');
     var drawer = document.querySelector('.ic-drawer');
@@ -134,73 +184,167 @@
     });
   }
 
-  /* ---------- Product page ---------- */
-  function initProduct() {
-    var buy = document.querySelector('[data-add-to-box]');
-    if (!buy) return;
-    var qty = 1;
-    var qtyEl = document.querySelector('[data-pdp-qty]');
-    var priceEl = document.querySelector('[data-pdp-price]');
-    function paint() {
-      if (qtyEl) qtyEl.textContent = qty;
-      if (priceEl) priceEl.textContent = '$' + (PRODUCT.price * qty);
-    }
-    var minus = document.querySelector('[data-pdp-minus]');
-    var plus = document.querySelector('[data-pdp-plus]');
-    if (minus) minus.addEventListener('click', function () { qty = Math.max(1, qty - 1); paint(); });
-    if (plus) plus.addEventListener('click', function () { qty = Math.min(99, qty + 1); paint(); });
-    buy.addEventListener('click', function () {
-      setQty(getQty() + qty);
-      showToast(PRODUCT.name + ' ' + PRODUCT.dose + ' added to your box');
+  /* ---------- Catalog "Add to box" buttons (index cards) ---------- */
+  function initCatalogAdd() {
+    document.querySelectorAll('[data-add-sku]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var sku = btn.getAttribute('data-add-sku');
+        var p = product(sku);
+        if (!p) return;
+        addToCart(sku, 1);
+        showToast(p.name + ' ' + p.dose + ' added to your box');
+      });
     });
-    paint();
   }
 
-  /* ---------- Product stock cue (low-stock / sold out) ---------- */
-  function initStock() {
-    var buy = document.querySelector('[data-add-to-box]');
-    if (!buy) return; // only on pages with the add-to-box control (PDP / index)
-    var badge = document.querySelector('[data-stock-badge]');
-    fetch(STOCK_URL + PRODUCT.sku, { headers: { 'Accept': 'application/json' } })
+  /* ---------- Product page (templated by ?sku=) ---------- */
+  function currentPdpSku() {
+    var params = new URLSearchParams(window.location.search);
+    var sku = params.get('sku');
+    return PRODUCTS[sku] ? sku : CATALOG[0];
+  }
+
+  function initProduct() {
+    var root = document.querySelector('[data-pdp]');
+    if (!root) return;
+    var sku = currentPdpSku();
+    var p = product(sku);
+    if (!p) return;
+
+    /* Fill templated fields */
+    document.title = p.name + ' ' + p.dose + ' — Imperial Compounds';
+    function setText(sel, val) { var el = root.querySelector(sel); if (el) el.textContent = val; }
+    function setAttr(sel, attr, val) { var el = root.querySelector(sel); if (el) el.setAttribute(attr, val); }
+    setText('[data-pdp-crumb]', p.name + ' ' + p.dose);
+    setText('[data-pdp-eye]', p.eye);
+    setText('[data-pdp-name]', p.name);
+    setText('[data-pdp-dose]', p.dose + ' · lyophilized powder · single vial');
+    setText('[data-pdp-blurb]', p.blurb);
+    setText('[data-pdp-strength]', p.dose + ' per vial');
+    setText('[data-pdp-coa-name]', p.name + ' ' + p.dose);
+    setAttr('[data-pdp-img]', 'src', p.img);
+    setAttr('[data-pdp-img]', 'alt', p.name + ' ' + p.dose + ' vial');
+    var coaLink = root.querySelector('[data-pdp-coa-link]');
+    if (coaLink) {
+      var subj = 'COA request — ' + p.name + ' ' + p.dose;
+      coaLink.setAttribute('href', 'mailto:' + ORDER_EMAIL +
+        '?subject=' + encodeURIComponent(subj) +
+        '&body=' + encodeURIComponent('Lot number: \n\nPlease send the certificate of analysis for my lot.'));
+    }
+
+    /* Quantity + price + add */
+    var qty = 1;
+    var qtyEl = root.querySelector('[data-pdp-qty]');
+    var priceEl = root.querySelector('[data-pdp-price]');
+    function paint() {
+      if (qtyEl) qtyEl.textContent = qty;
+      if (priceEl) priceEl.textContent = money(p.price * qty);
+    }
+    var minus = root.querySelector('[data-pdp-minus]');
+    var plus = root.querySelector('[data-pdp-plus]');
+    if (minus) minus.addEventListener('click', function () { qty = Math.max(1, qty - 1); paint(); });
+    if (plus) plus.addEventListener('click', function () { qty = Math.min(99, qty + 1); paint(); });
+    var buy = root.querySelector('[data-add-to-box]');
+    if (buy) buy.addEventListener('click', function () {
+      addToCart(sku, qty);
+      showToast(p.name + ' ' + p.dose + ' added to your box');
+    });
+    paint();
+
+    /* Stock cue for this SKU */
+    var badge = root.querySelector('[data-stock-badge]');
+    fetch(STOCK_URL + sku, { headers: { 'Accept': 'application/json' } })
       .then(function (res) { return res.ok ? res.json() : null; })
       .then(function (data) {
         if (!data || !data.ok) return;
         if (!data.available) {
-          if (badge) {
-            badge.textContent = 'Sold out';
-            badge.className = 'ic-stock-pill out';
-            badge.hidden = false;
-          }
-          buy.disabled = true;
-          buy.setAttribute('aria-disabled', 'true');
+          if (badge) { badge.textContent = 'Sold out'; badge.className = 'ic-stock-pill out'; badge.hidden = false; }
+          if (buy) { buy.disabled = true; buy.setAttribute('aria-disabled', 'true'); }
           renderIcons();
         } else if (data.low) {
-          if (badge) {
-            badge.textContent = 'Less than 5 remaining';
-            badge.className = 'ic-stock-pill low';
-            badge.hidden = false;
-          }
+          if (badge) { badge.textContent = 'Almost gone'; badge.className = 'ic-stock-pill low'; badge.hidden = false; }
         }
-        // plenty in stock → show nothing, never a number
       })
       .catch(function () { /* leave default UI on error */ });
   }
 
-  /* ---------- Checkout page ---------- */
+  /* ---------- Checkout page (multi-line) ---------- */
   function initCheckout() {
     var page = document.querySelector('[data-checkout]');
     if (!page) return;
 
-    var filled = document.querySelector('[data-co-filled]');
-    var empty = document.querySelector('[data-co-empty]');
+    var filled = page.querySelector('[data-co-filled]');
+    var empty = page.querySelector('[data-co-empty]');
+    var itemsWrap = page.querySelector('[data-co-items]');
+    var sumRows = page.querySelector('[data-co-sumrows]');
     var rail = 'interac';
 
+    function lines() {
+      var c = getCart();
+      return Object.keys(c).map(function (sku) {
+        var p = product(sku);
+        return { sku: sku, p: p, qty: c[sku], lineTotal: round2(p.price * c[sku]) };
+      });
+    }
+    function round2(n) { return Math.round(n * 100) / 100; }
+
     function totals() {
-      var n = getQty();
-      var sub = PRODUCT.price * n;
+      var ls = lines();
+      var sub = 0, n = 0;
+      ls.forEach(function (l) { sub += l.lineTotal; n += l.qty; });
+      sub = round2(sub);
       var coupon = getCoupon();
-      var disc = coupon ? Math.round(sub * COUPON_RATE * 100) / 100 : 0;
-      return { n: n, sub: sub, coupon: coupon, disc: disc, total: sub - disc + SHIPPING_FLAT };
+      var disc = coupon ? round2(sub * COUPON_RATE) : 0;
+      return { lines: ls, n: n, sub: sub, coupon: coupon, disc: disc, total: round2(sub - disc + SHIPPING_FLAT) };
+    }
+
+    function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+    function renderItems(ls) {
+      itemsWrap.innerHTML = '';
+      ls.forEach(function (l) {
+        var row = el('div', 'ic-co-item');
+
+        var thumb = el('div', 'thumb');
+        var img = document.createElement('img');
+        img.src = l.p.img; img.alt = l.p.name + ' ' + l.p.dose;
+        thumb.appendChild(img);
+
+        var meta = el('div', 'meta');
+        var nm = el('div', 'nm', l.p.name + ' ');
+        nm.appendChild(el('span', null, l.p.dose));
+        meta.appendChild(nm);
+        meta.appendChild(el('div', 'ds', l.p.desc));
+        meta.appendChild(el('div', 'ruoline', 'Research use only'));
+
+        var qtyBox = el('div', 'ic-qty sm');
+        var minus = el('button', null); minus.setAttribute('aria-label', 'Decrease quantity');
+        minus.innerHTML = '<span class="ic" style="font-size:13px"><i data-lucide="minus"></i></span>';
+        var qspan = el('span', null, String(l.qty));
+        var plus = el('button', null); plus.setAttribute('aria-label', 'Increase quantity');
+        plus.innerHTML = '<span class="ic" style="font-size:13px"><i data-lucide="plus"></i></span>';
+        minus.addEventListener('click', function () { setLine(l.sku, l.qty - 1); paint(); });
+        plus.addEventListener('click', function () { setLine(l.sku, l.qty + 1); paint(); });
+        qtyBox.appendChild(minus); qtyBox.appendChild(qspan); qtyBox.appendChild(plus);
+
+        var price = el('div', 'price', money(l.lineTotal));
+        var rm = el('button', 'rm'); rm.setAttribute('aria-label', 'Remove item');
+        rm.innerHTML = '<span class="ic" style="font-size:15px"><i data-lucide="x"></i></span>';
+        rm.addEventListener('click', function () { setLine(l.sku, 0); paint(); });
+
+        row.appendChild(thumb); row.appendChild(meta); row.appendChild(qtyBox); row.appendChild(price); row.appendChild(rm);
+        itemsWrap.appendChild(row);
+      });
+    }
+
+    function renderSumRows(ls) {
+      sumRows.innerHTML = '';
+      ls.forEach(function (l) {
+        var r = el('div');
+        r.appendChild(el('span', null, l.p.name + ' ' + l.p.dose + ' × ' + l.qty));
+        r.appendChild(el('span', null, money(l.lineTotal) + ' CAD'));
+        sumRows.appendChild(r);
+      });
     }
 
     function paint() {
@@ -212,10 +356,9 @@
       }
       filled.style.display = '';
       empty.style.display = 'none';
+      renderItems(t.lines);
+      renderSumRows(t.lines);
       var q = function (sel) { return page.querySelector(sel); };
-      q('[data-co-qty]').textContent = t.n;
-      q('[data-co-line-price]').textContent = money(t.sub);
-      q('[data-co-subtotal]').textContent = money(t.sub) + ' CAD';
       q('[data-co-shipping]').textContent = money(SHIPPING_FLAT);
       q('[data-co-total]').textContent = money(t.total);
       var discRow = q('[data-co-disc-row]');
@@ -225,6 +368,7 @@
         if (t.coupon) q('[data-co-disc]').textContent = '−$' + t.disc.toFixed(2);
       }
       if (entry) entry.style.display = t.coupon ? 'none' : '';
+      renderIcons();
     }
 
     /* coupon */
@@ -252,16 +396,6 @@
       paint();
     });
 
-    page.querySelectorAll('[data-co-minus]').forEach(function (b) {
-      b.addEventListener('click', function () { setQty(Math.max(1, getQty() - 1)); paint(); });
-    });
-    page.querySelectorAll('[data-co-plus]').forEach(function (b) {
-      b.addEventListener('click', function () { setQty(getQty() + 1); paint(); });
-    });
-    page.querySelectorAll('[data-co-remove]').forEach(function (b) {
-      b.addEventListener('click', function () { setQty(0); paint(); });
-    });
-
     /* payment rails */
     var rails = page.querySelectorAll('.ic-rail');
     var noteInterac = page.querySelector('[data-note-interac]');
@@ -280,13 +414,14 @@
     var place = page.querySelector('[data-place-order]');
 
     function orderMailto(t, name, email, phone, city, method) {
-      var n = t.n;
       var label = method === 'crypto' ? 'Crypto (BTC / ETH / USDC)' : 'Interac e-Transfer';
-      var subject = 'Order — ' + PRODUCT.name + ' ' + PRODUCT.dose + ' × ' + n;
+      var itemLines = t.lines.map(function (l) {
+        return '  • ' + l.p.name + ' ' + l.p.dose + ' × ' + l.qty + ' — ' + money(l.lineTotal) + ' CAD';
+      }).join('\n');
+      var subject = 'Order — Imperial Compounds (' + t.n + ' vial' + (t.n > 1 ? 's' : '') + ')';
       var body =
         'New order — Imperial Compounds\n\n' +
-        'Product: ' + PRODUCT.name + ' ' + PRODUCT.dose + ' (lyophilized powder, single vial)\n' +
-        'Quantity: ' + n + ' vial' + (n > 1 ? 's' : '') + '\n' +
+        'Items:\n' + itemLines + '\n\n' +
         'Subtotal: ' + money(t.sub) + ' CAD\n' +
         (t.coupon ? 'Coupon ' + t.coupon + ': −$' + t.disc.toFixed(2) + ' CAD\n' : '') +
         'Shipping: ' + money(SHIPPING_FLAT) + ' CAD\n' +
@@ -321,7 +456,7 @@
       filled.style.display = 'none';
       empty.style.display = 'none';
       if (confirmPanel) confirmPanel.style.display = '';
-      setQty(0);
+      saveCart({});
       setCoupon(null);
       renderIcons();
       window.scrollTo(0, 0);
@@ -351,7 +486,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          qty: t.n,
+          items: t.lines.map(function (l) { return { sku: l.sku, qty: l.qty }; }),
           coupon: t.coupon || '',
           name: name,
           email: email,
@@ -364,7 +499,7 @@
           place.disabled = false;
           place.textContent = prevLabel;
           if (hint) {
-            hint.textContent = 'Sorry — this just sold out. We’ll restock soon.';
+            hint.textContent = 'Sorry — one of these just sold out. Adjust your box and try again.';
             hint.style.display = '';
           }
           return null;
@@ -529,12 +664,13 @@
 
   /* ---------- Boot ---------- */
   document.addEventListener('DOMContentLoaded', function () {
+    try { localStorage.removeItem(OLD_CART_KEY); } catch (e) {}
     renderIcons();
     updateCartCount();
     initDrawer();
     initAccordions();
+    initCatalogAdd();
     initProduct();
-    initStock();
     initCheckout();
     initContact();
     initPopup();
