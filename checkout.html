@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Checkout — Imperial Compounds</title>
-<meta name="description" content="Imperial Compounds checkout — Interac e-Transfer or crypto. No account required. For research use only." />
+<meta name="description" content="Imperial Compounds checkout — Crypto (BTC / ETH / USDC). No account required. For research use only." />
 <link rel="icon" type="image/png" href="assets/brand/crest.png" />
 <link rel="stylesheet" href="styles/colors_and_type.css" />
 <link rel="stylesheet" href="styles/kit.css" />
@@ -27,7 +27,7 @@
 <body>
 <div class="ic-app">
 
-<div class="ic-annc">Every batch independently lab tested&nbsp;&nbsp;·&nbsp;&nbsp;Discreet Canada-wide shipping&nbsp;&nbsp;·&nbsp;&nbsp;Interac &amp; crypto accepted</div>
+<div class="ic-annc">Every batch independently lab tested&nbsp;&nbsp;·&nbsp;&nbsp;Discreet Canada-wide shipping&nbsp;&nbsp;·&nbsp;&nbsp;Crypto accepted</div>
 
 <header class="ic-header">
   <div class="ic-wrap ic-hbar">
@@ -115,27 +115,16 @@
         <section class="ic-co-block">
           <h3><span class="num">3</span> Payment</h3>
           <div class="ic-rails">
-            <button class="ic-rail sel" data-rail="interac">
-              <span class="radio"></span>
-              <div class="rail-top"><span class="rail-nm">Interac e-Transfer</span><span class="rail-ic"><span class="ic" style="font-size:19px"><i data-lucide="landmark"></i></span></span></div>
-              <!-- TODO-CONFIRM-EMAIL: orders@imperialcompounds.com -->
-              <div class="rail-desc">Send your e-Transfer to <span class="mono">orders@imperialcompounds.com</span> once we confirm your order.</div>
-              <span class="rail-tag">Recommended for Canada</span>
-            </button>
-            <button class="ic-rail" data-rail="crypto">
+            <button class="ic-rail sel" data-rail="crypto">
               <span class="radio"></span>
               <div class="rail-top"><span class="rail-nm">Crypto</span><span class="rail-ic gold"><span class="ic" style="font-size:19px"><i data-lucide="bitcoin"></i></span></span></div>
-              <div class="rail-desc">BTC · ETH · USDC — we send the address once we confirm your order.</div>
-              <span class="rail-tag">Private settlement</span>
+              <div class="rail-desc">BTC · ETH · USDC — we send the payment address once we confirm your order.</div>
+              <span class="rail-tag">Private settlement · no account</span>
             </button>
           </div>
-          <div class="ic-rail-note" data-note-interac>
+          <div class="ic-rail-note" data-note-crypto>
             <span class="ic" style="font-size:15px"><i data-lucide="info"></i></span>
-            Placing the order opens a pre-filled email; we reply with e-Transfer details. No card details, ever.
-          </div>
-          <div class="ic-rail-note" data-note-crypto style="display:none">
-            <span class="ic" style="font-size:15px"><i data-lucide="info"></i></span>
-            Placing the order opens a pre-filled email; we reply with the payment address and ship when the transaction confirms.
+            Place your order and we'll email you the payment address; we ship once the transaction confirms. No card details, ever.
           </div>
         </section>
       </div>

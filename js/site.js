@@ -277,7 +277,7 @@
     var empty = page.querySelector('[data-co-empty]');
     var itemsWrap = page.querySelector('[data-co-items]');
     var sumRows = page.querySelector('[data-co-sumrows]');
-    var rail = 'interac';
+    var rail = 'crypto';
 
     function lines() {
       var c = getCart();
